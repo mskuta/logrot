@@ -1,5 +1,5 @@
 /*
- * $Id: logrot.c,v 1.2 1997/02/17 13:36:47 lukem Exp $
+ * $Id: logrot.c,v 1.3 1997/02/18 01:00:24 lukem Exp $
  */
 
 /*
@@ -156,8 +156,6 @@ main(int argc, char *argv[])
 	origlog = rotate_log(log, pid, sig, wait);
 	finallog = filter_log(origlog, rotlog, filter_prog,
 				compress ? compress_prog : NULL, compress_ext);
-	if (unlink(origlog) == -1)
-		err(1, "can't unlink %s", origlog);
 	if (postfilter_prog)
 		postfilter_log(finallog, postfilter_prog);
 
@@ -174,6 +172,8 @@ main(int argc, char *argv[])
  *	filter_prog then compress_prog if necessary.
  *	If compress_prog != NULL, compress_ext is appended
  *	to rotlog to generate the resultant filename.
+ *	Sets the permissions and modification time of rotlog
+ *	to those of origlog, and then unlinks origlog.
  *	Returns a pointer to a malloc(3)ed string containing the
  *	resultant filename.
  */
@@ -181,6 +181,7 @@ char *
 filter_log(const char *origlog, const char *rotlog, const char *filter_prog,
 	const char *compress_prog, const char *compress_ext)
 {
+	struct stat stbuf;
 	char	outfile[MAXPATHLEN];
 	int	infd, outfd, pipefd[2], ispipe, junkfd;
 	int	filter_pid, compress_pid;
@@ -274,6 +275,18 @@ filter_log(const char *origlog, const char *rotlog, const char *filter_prog,
 		if (in == -1)
 			err(1, "reading %s", origlog);
 	}
+
+	if (fstat(infd, &stbuf) == -1)
+		err(1, "can't stat '%s'", outfile);
+	if (fchmod(outfd, stbuf.st_mode) == -1)
+		err(1, "can't fchmod '%s' to %o", outfile, (int)stbuf.st_mode);
+	if (fchown(outfd, stbuf.st_uid, stbuf.st_gid) == -1)
+		err(1, "can't fchown '%s' to %d,%d", outfile,
+		    (int)stbuf.st_uid, (int)stbuf.st_gid);
+	close(infd);
+	close(outfd);
+	if (unlink(origlog) == -1)
+		err(1, "can't unlink %s", origlog);
 
 	return (xstrdup(outfile));
 } /* filter_log */
