@@ -1,4 +1,4 @@
-.\"	$Id: logrot.man,v 1.2 1997/03/18 06:45:06 lukem Exp $
+.\"	$Id: logrot.man,v 1.3 1997/04/01 03:24:54 lukem Exp $
 .\"
 .\" Copyright 1997 Luke Mewburn <lukem@netbsd.org>.  All rights reserved.
 .\"
@@ -60,7 +60,8 @@ logrot \- rotate log files
 .SH DESCRIPTION
 .I logrot
 rotates the log file
-.I file, creating a new log file with the same permissions
+.IR "file" ,
+creating a new log file with the same permissions
 as the original.
 If necessary, the rotated file can be optionally pre-processed with
 .IR "preprocessor" ,
@@ -72,8 +73,8 @@ and post-processed with
 .IR "postprocessor" .
 .PP
 .I logrot
-attempts to rotate the file as atomically as possible, in that the
-time window in which
+attempts to rotate the file as atomically as possible,
+so that the time window in which
 .I file
 doesn't exist is minimised.
 .PP
@@ -83,9 +84,11 @@ can be sent to a process id stored in
 .IR "pidfile" ,
 and a time delay of
 .I wait
-seconds will occur before performing any filtering.
+seconds will occur before any filtering is performed - giving
+the logging process time to re-open the new logfile on receipt
+of the signal.
 .PP
-The name of the rotate file can be configured by specifying
+The name of the rotated file can be configured by specifying
 the format string
 .IR "rotatefmt" ,
 and the target directory is
