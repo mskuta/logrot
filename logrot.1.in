@@ -1,4 +1,4 @@
-.\"	$Id: logrot.1.in,v 1.6 1998/01/09 05:50:39 lukem Exp $
+.\"	$Id: logrot.1.in,v 1.7 1998/03/22 11:01:58 lukem Exp $
 .\"
 .\" Copyright 1997, 1998 Luke Mewburn <lukem@netbsd.org>.  All rights reserved.
 .\"
@@ -134,7 +134,7 @@ Use
 as the compression program for
 .BR "\-c" .
 Defaults to
-.IR "gzip" (1).
+\`!GZIP!\'.
 .TP
 .BI \-d " destdir"
 Store
@@ -170,11 +170,12 @@ The first word on the first line of
 is assumed to be the pid.
 Defaults to \`!PIDFILE!\'.
 If no signal is to be sent, use
-.BR \-s " 0".
+.B \-s
+0.
 .TP
 .BI \-r " rotatefmt"
 Format of rotated filename, which is relative to 
-.BI \-d " destdir".
+.BI \-d " destdir" .
 Escape characters a la
 .IR "printf" (3)
 are available; refer to

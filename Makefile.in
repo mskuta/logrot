@@ -1,4 +1,4 @@
-#	$Id$
+#	$Id: Makefile.in,v 1.1 1998/03/22 11:01:50 lukem Exp $
 
 #
 # Copyright 1998 Luke Mewburn <lukem@netbsd.org>.  All rights reserved.
@@ -78,7 +78,8 @@ logrot: ${OBJ} @LIBOBJS@
 
 logrot.1:	logrot.1.in Makefile
 	@rm -f logrot.1
-	sed -e 's%!PIDFILE!%'${PIDFILE}'%' < logrot.1.in > logrot.1
+	sed -e 's%!PIDFILE!%'${PIDFILE}'%' -e 's%!GZIP!%'${GZIP}'%' \
+	    < logrot.1.in > logrot.1
 
 ${OBJ}: ${srcdir}/logrot.h config.h 
 

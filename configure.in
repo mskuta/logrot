@@ -1,4 +1,4 @@
-dnl	$Id: configure.in,v 1.1 1998/03/22 11:01:55 lukem Exp $
+dnl	$Id: configure.in,v 1.2 1998/03/22 11:26:27 lukem Exp $
 
 dnl
 dnl Copyright 1998 Luke Mewburn <lukem@netbsd.org>.  All rights reserved.
@@ -53,7 +53,7 @@ AC_CHECK_FUNCS(strerror sysconf waitpid)
 AC_REPLACE_FUNCS(err mkstemp)
 
 PIDFILE="/var/run/syslog.pid"
-AC_MSG_CHECKING(locating syslogd\'s pid file)
+AC_MSG_CHECKING(locating syslogd's pid file)
 if test \! -f $PIDFILE; then
 	PIDFILE="/etc/syslog.pid"
 fi

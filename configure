@@ -1616,8 +1616,8 @@ done
 
 
 PIDFILE="/var/run/syslog.pid"
-echo $ac_n "checking locating syslogd\'s pid file""... $ac_c" 1>&6
-echo "configure:1621: checking locating syslogd\'s pid file" >&5
+echo $ac_n "checking locating syslogd's pid file""... $ac_c" 1>&6
+echo "configure:1621: checking locating syslogd's pid file" >&5
 if test \! -f $PIDFILE; then
 	PIDFILE="/etc/syslog.pid"
 fi
