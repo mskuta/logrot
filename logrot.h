@@ -1,4 +1,4 @@
-/*	$Id: logrot.h,v 1.8 1998/03/22 11:26:30 lukem Exp $	*/
+/*	$Id: logrot.h,v 1.9 1998/06/17 14:20:15 lukem Exp $	*/
 
 /*
  * Copyright 1997, 1998 Luke Mewburn <lukem@netbsd.org>.
@@ -38,6 +38,12 @@
 #include <sys/types.h>
 #include <sys/param.h>
 #include <sys/stat.h>
+#ifdef STAT_MACROS_BROKEN
+#undef S_ISREG
+#undef S_ISDIR
+#define	S_ISREG(mode)	(((mode)&S_IFMT) == S_IFREG)
+#define	S_ISDIR(mode)	(((mode)&S_IFMT) == S_IFDIR)
+#endif
 
 #include <ctype.h>
 #include <errno.h>

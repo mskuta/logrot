@@ -1,4 +1,4 @@
-/*	$Id: logrot.c,v 1.14 1998/06/17 14:20:13 lukem Exp $	*/
+/*	$Id: logrot.c,v 1.15 1998/06/17 14:23:43 lukem Exp $	*/
 
 /*
  * Copyright 1997, 1998 Luke Mewburn <lukem@netbsd.org>.
@@ -31,7 +31,7 @@
  */
 
 #if !defined(lint)
-static char rcsid[] = "$Id: logrot.c,v 1.14 1998/06/17 14:20:13 lukem Exp $";
+static char rcsid[] = "$Id: logrot.c,v 1.15 1998/06/17 14:23:43 lukem Exp $";
 #endif /* !lint */
 
 #include "logrot.h"
@@ -678,6 +678,10 @@ rotate_logs(int logc, char **logs, pid_t pid, int sig,
 
 		if (stat(logs[idx], &stbuf) == -1) {
 			warn("can't stat '%s'", logs[idx]);
+			goto abort_rotate_logs;
+		}
+		if (! S_ISREG(stbuf)) {
+			warnx("'%s' isn't a regular file", logs[idx]);
 			goto abort_rotate_logs;
 		}
 

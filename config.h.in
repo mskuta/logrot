@@ -24,6 +24,9 @@
 /* Define to `unsigned' if <sys/types.h> doesn't define.  */
 #undef size_t
 
+/* Define if the `S_IS*' macros in <sys/stat.h> do not work properly.  */
+#undef STAT_MACROS_BROKEN
+
 /* Define if you have the ANSI C header files.  */
 #undef STDC_HEADERS
 
