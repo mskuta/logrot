@@ -1,5 +1,5 @@
 /*
- * $Id: logrot.h,v 1.3 1997/02/22 05:42:41 lukem Exp $
+ * $Id: logrot.h,v 1.4 1997/02/22 17:09:13 lukem Exp $
  */
 
 /*
@@ -32,7 +32,7 @@
  */
 
 #ifndef COMPRESS_PROG
-#define COMPRESS_PROG	"gzip"
+#define COMPRESS_PROG	"/opt/local/bin/gzip"
 #endif
 #ifndef COMPRESS_EXT
 #define COMPRESS_EXT	".gz"

@@ -1,5 +1,5 @@
 /*
- * $Id: logrot.c,v 1.6 1997/02/22 16:27:41 lukem Exp $
+ * $Id: logrot.c,v 1.7 1997/02/22 17:09:13 lukem Exp $
  */
 
 /*
@@ -184,10 +184,11 @@ filter_log(const char *origlog, const char *rotlog, const char *filter_prog,
 	struct stat stbuf;
 	char	outfile[MAXPATHLEN];
 	int	infd, outfd, pipefd[2], ispipe, junkfd;
-	int	filter_pid, compress_pid;
+	int	filter_pid, compress_pid, rstat;
 
-	if (strlen(rotlog) + (compress_prog != NULL ? strlen(compress_ext) : 0)
-	    + 1 > sizeof(outfile))
+	if ((strlen(rotlog) +
+	    (compress_prog != NULL ? strlen(compress_ext) : 0) + 1) >
+	    sizeof(outfile))
 		errx(1, "rotated filename would be too long");
 	strcpy(outfile, rotlog);
 	if (compress_prog != NULL)
@@ -249,17 +250,10 @@ filter_log(const char *origlog, const char *rotlog, const char *filter_prog,
 		}
 	}
 
-	if (filter_pid != -1 || compress_pid != -1) {
-		while (filter_pid != -1 || compress_pid != -1) {
-			if (filter_pid != -1)
-				if (waitpid(filter_pid, NULL, WNOHANG) != 0)
-					filter_pid = -1;
-			if (compress_pid != -1)
-				if (waitpid(compress_pid, NULL, WNOHANG) != 0)
-					compress_pid = -1;
-			sleep(1);
-		}
-	} else {
+			/*
+			 * direct copy required
+			 */
+	if (filter_pid == -1 && compress_pid == -1) {
 		char	xferbuf[BUFSIZ], *tmp;
 		size_t	in, out;
 
@@ -274,6 +268,46 @@ filter_log(const char *origlog, const char *rotlog, const char *filter_prog,
 		}
 		if (in == -1)
 			err(1, "reading %s", origlog);
+
+			/*
+			 * filtering via process(es) occurring
+			 */
+	} else while (filter_pid != -1 || compress_pid != -1) {
+			/*
+			 * XXX differentiate between child being stopped
+			 * with SIGSTOP or SIGTSTP and child exiting ok
+			 */
+		if ((filter_pid != -1) &&
+		    (waitpid(filter_pid, &rstat, WNOHANG) != 0)) {
+			if (WIFEXITED(rstat) != 0) {
+				if (WEXITSTATUS(rstat) != 0)
+					warnx("%s exited with %d",
+					    filter_prog, WEXITSTATUS(rstat));
+			} else if (WIFSIGNALED(rstat) != 0) {
+				warnx("%s exited due to signal %d",
+				    filter_prog, WTERMSIG(rstat));
+			} else {
+				warnx("%s returned status %d - why?",
+				    filter_prog, rstat);
+			}
+			filter_pid = -1;
+		}
+		if ((compress_pid != -1) &&
+		    (waitpid(compress_pid, &rstat, WNOHANG) != 0)) {
+			if (WIFEXITED(rstat) != 0) {
+				if (WEXITSTATUS(rstat) != 0)
+					warnx("%s exited with %d",
+					    compress_prog, WEXITSTATUS(rstat));
+			} else if (WIFSIGNALED(rstat) != 0) {
+				warnx("%s exited due to signal %d",
+				    compress_prog, WTERMSIG(rstat));
+			} else {
+				warnx("%s returned status %d - why?",
+				    compress_prog, rstat);
+			}
+			compress_pid = -1;
+		}
+		sleep(1);
 	}
 
 	if (fstat(infd, &stbuf) == -1)
