@@ -1,4 +1,4 @@
-/*	$Id: logrot.c,v 1.16 1998/06/22 03:36:03 lukem Exp $	*/
+/*	$Id: logrot.c,v 1.17 1998/06/22 04:09:14 lukem Exp $	*/
 
 /*
  * Copyright 1997, 1998 Luke Mewburn <lukem@netbsd.org>.
@@ -31,7 +31,7 @@
  */
 
 #if !defined(lint)
-static char rcsid[] = "$Id: logrot.c,v 1.16 1998/06/22 03:36:03 lukem Exp $";
+static char rcsid[] = "$Id: logrot.c,v 1.17 1998/06/22 04:09:14 lukem Exp $";
 #endif /* !lint */
 
 #include "logrot.h"
@@ -443,6 +443,14 @@ parse_rotate_fmt(const char *fmt, const char *dir, int logc, char **logs,
 			sprintf(buf, "%s", dir);
 		else				/* specific dir */
 			sprintf(buf, "%s/%s", logdir, dir);
+		if (stat(buf, &stbuf) == -1) {
+			if (errno == ENOENT) {
+				warnx("%s doesn't exist - using %s instead",
+				    buf, logdir);
+				strcpy(buf, logdir);
+			} else 
+				err(ecode, "can't stat %s", buf);
+		}
 		to = buf + strlen(buf);
 		if (*to != '/')
 			strcat(to++, "/");
