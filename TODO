@@ -1,7 +1,7 @@
 			logrot todo
 			-----------
 
-Document ref:	$Id: TODO,v 1.4 1998/06/17 14:20:06 lukem Exp $
+Document ref:	$Id: TODO,v 1.5 1998/08/08 01:47:27 lukem Exp $
 
 * provide maintenance scripts to cull old rotated logfiles (it's
   better as a separate tool that's called as a postprocessor)
@@ -10,3 +10,5 @@ possible enhancements:
 * create target directory if necessary
 * support '%f' (and maybe others) in '-d destdir'
 * warn if original log doesn't exist or is empty
+* add "-S nn[bBkKMmGg]" - only rotate if size of log is >= nn[{suffix}]
+* add "-T trigger" - only rotate if trigger returns 0
