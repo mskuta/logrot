@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: err.c,v 1.2 1997/02/17 13:36:46 lukem Exp $
  */
 
 /*
@@ -54,7 +54,7 @@ err(int eval, const char *fmt, ...)
                 (void)fprintf(stderr, ": ");
 		va_end(ap);
         }
-        (void)fprintf(stderr, "\n");
+        (void)fprintf(stderr, "%s\n", strerror(sverrno));
         exit(eval);
 }
 
@@ -69,10 +69,9 @@ errx(int eval, const char *fmt, ...)
         if (fmt != NULL) {
 		va_start(ap, fmt);
                 (void)vfprintf(stderr, fmt, ap);
-                (void)fprintf(stderr, ": ");
 		va_end(ap);
         }
-        (void)fprintf(stderr, "%s\n", strerror(sverrno));
+        (void)fprintf(stderr, "\n");
         exit(eval);
 }
 
@@ -90,7 +89,7 @@ warn(const char *fmt, ...)
                 (void)fprintf(stderr, ": ");
 		va_end(ap);
         }
-        (void)fprintf(stderr, "\n");
+        (void)fprintf(stderr, "%s\n", strerror(sverrno));
 }
 
 void
@@ -104,8 +103,7 @@ warnx(const char *fmt, ...)
         if (fmt != NULL) {
 		va_start(ap, fmt);
                 (void)vfprintf(stderr, fmt, ap);
-                (void)fprintf(stderr, ": ");
 		va_end(ap);
         }
-        (void)fprintf(stderr, "%s\n", strerror(sverrno));
+        (void)fprintf(stderr, "\n");
 }

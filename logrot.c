@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: logrot.c,v 1.2 1997/02/17 13:36:47 lukem Exp $
  */
 
 /*
@@ -157,7 +157,7 @@ main(int argc, char *argv[])
 	finallog = filter_log(origlog, rotlog, filter_prog,
 				compress ? compress_prog : NULL, compress_ext);
 	if (unlink(origlog) == -1)
-		errx(1, "can't unlink %s", origlog);
+		err(1, "can't unlink %s", origlog);
 	if (postfilter_prog)
 		postfilter_log(finallog, postfilter_prog);
 
@@ -187,16 +187,16 @@ filter_log(const char *origlog, const char *rotlog, const char *filter_prog,
 
 	if (strlen(rotlog) + (compress_prog != NULL ? strlen(compress_ext) : 0)
 	    + 1 > sizeof(outfile))
-		err(1, "rotated filename would be too long");
+		errx(1, "rotated filename would be too long");
 	strcpy(outfile, rotlog);
 	if (compress_prog != NULL)
 		strcat(outfile, compress_ext);
 
 	if ((infd = open(origlog, O_RDONLY)) == -1)
-		errx(1, "can't open '%s'", origlog);
+		err(1, "can't open '%s'", origlog);
 
 	if ((outfd = open(outfile, O_WRONLY | O_CREAT | O_EXCL, 0700)) == -1)
-		errx(1, "can't open '%s' for writing", outfile);
+		err(1, "can't open '%s' for writing", outfile);
 
 	filter_pid = -1;
 	compress_pid = -1;
@@ -204,24 +204,24 @@ filter_log(const char *origlog, const char *rotlog, const char *filter_prog,
 
 	if (filter_prog && compress_prog) {
 		if (pipe(pipefd) == -1)
-			errx(1, "can't create pipe");
+			err(1, "can't create pipe");
 		ispipe = 1;
 	}
 
 	if (filter_prog) {
 		switch (filter_pid = fork()) {
 		case -1:
-			errx(1, "can't fork");
+			err(1, "can't fork");
 		case 0:
 			if (dup2(infd, fileno(stdin)) == -1)
-				errx(1, "can't dup2 filter stdin");
+				err(1, "can't dup2 filter stdin");
 			if (dup2(ispipe ? pipefd[0] : outfd,
 			    fileno(stdout)) == -1)
-				errx(1, "can't dup2 filter stdout");
+				err(1, "can't dup2 filter stdout");
 			for (junkfd = 3 ; junkfd < getdtablesize(); junkfd++)
 				close(junkfd);
 			execl(PATH_BSHELL, "sh", "-c", filter_prog, NULL);
-			errx(1, "can't exec sh to run %s", filter_prog);
+			err(1, "can't exec sh to run %s", filter_prog);
 		default:
 			if (ispipe)
 				close(pipefd[0]);
@@ -231,17 +231,17 @@ filter_log(const char *origlog, const char *rotlog, const char *filter_prog,
 	if (compress_prog) {
 		switch (compress_pid = fork()) {
 		case -1:
-			errx(1, "can't fork");
+			err(1, "can't fork");
 		case 0:
 			if (dup2(ispipe ? pipefd[1] : infd,
 			    fileno(stdin)) == -1)
-				errx(1, "can't dup2 compress stdin");
+				err(1, "can't dup2 compress stdin");
 			if (dup2(outfd, fileno(stdout)) == -1)
-				errx(1, "can't dup2 compress stdout");
+				err(1, "can't dup2 compress stdout");
 			for (junkfd = 3 ; junkfd < getdtablesize(); junkfd++)
 				close(junkfd);
 			execl(PATH_BSHELL, "sh", "-c", compress_prog, NULL);
-			errx(1, "can't exec sh to run %s", compress_prog);
+			err(1, "can't exec sh to run %s", compress_prog);
 		default:
 			if (ispipe)
 				close(pipefd[1]);
@@ -269,10 +269,10 @@ filter_log(const char *origlog, const char *rotlog, const char *filter_prog,
 				in -= out;
 			}
 			if (out == -1)
-				errx(1, "writing %s", outfile);
+				err(1, "writing %s", outfile);
 		}
 		if (in == -1)
-			errx(1, "reading %s", origlog);
+			err(1, "reading %s", origlog);
 	}
 
 	return (xstrdup(outfile));
@@ -292,7 +292,7 @@ parse_pid(const char *pidfile)
 	pid_t	pid;
 
 	if ((pf = fopen(pidfile, "r")) == NULL)
-		errx(1, "can't open '%s'", pidfile);
+		err(1, "can't open '%s'", pidfile);
 	pid = 0;
 	if (fgets(buf, sizeof(buf), pf) != NULL) {
 		p = buf;
@@ -305,7 +305,7 @@ parse_pid(const char *pidfile)
 	}
 	fclose(pf);
 	if (pid == 0)
-		err(1, "can't parse pid from '%s'", pidfile);
+		errx(1, "can't parse pid from '%s'", pidfile);
 
 	if (kill(pid, 0) == -1)
 		errx(1, "can't send test signal 0 to pid %d", (int)pid);
@@ -334,7 +334,7 @@ parse_rotate_fmt(const char *fmt, const char *dir, const char *log, time_t now)
 
 	tmnow = localtime(&now);
 	if (strlen(log) + (dir ? strlen(dir) : 0) + 3 > sizeof(buf))
-		err(1, "format '%s' is too long", fmt);
+		errx(1, "format '%s' is too long", fmt);
 	splitpath(log, &logdir, &logbase);
 
 	bufend = buf + sizeof(buf) - 1;
@@ -353,7 +353,7 @@ parse_rotate_fmt(const char *fmt, const char *dir, const char *log, time_t now)
 
 	for (from = fmt; *from; from++) {
 		if (to > bufend)
-			err(1, "format '%s' is too long", fmt);
+			errx(1, "format '%s' is too long", fmt);
 		if (*from != '%') {
 			*to++ = *from;
 			continue;
@@ -361,13 +361,13 @@ parse_rotate_fmt(const char *fmt, const char *dir, const char *log, time_t now)
 		from++;
 		switch (*from) {
 		case '\0':
-			err(1, "%% format requires a specifier");
+			errx(1, "%% format requires a specifier");
 		case 'f':
 			junk1 = logbase;
 			while (*junk1 && to <= bufend)
 				*to++ = *junk1++;
 			if (*junk1)
-				err(1, "format '%s' is too long", fmt);
+				errx(1, "format '%s' is too long", fmt);
 			break;
 		case 'y':
 		case 'Y':
@@ -380,15 +380,15 @@ parse_rotate_fmt(const char *fmt, const char *dir, const char *log, time_t now)
 			to += strftime(to, bufend - to, junk2, tmnow);
 			break;
 		default:
-			err(1, "%%%c not supported", *from);
+			errx(1, "%%%c not supported", *from);
 		}
 	}
 
 	if (stat(buf, &stbuf) == -1) {
 		if (errno != ENOENT)
-			errx(1, "can't stat %s", buf);
+			err(1, "can't stat %s", buf);
 	} else
-		err(1, "%s already exists", buf);
+		errx(1, "%s already exists", buf);
 
 	free(logdir);
 	free(logbase);
@@ -399,23 +399,46 @@ parse_rotate_fmt(const char *fmt, const char *dir, const char *log, time_t now)
 /*
  * parse_sig --
  *	Parse the given string for a signal name or number.
- *
- *	XXX: support signal names as well as numbers
  */
 int
 parse_sig(const char *signame)
 {
-	int		 sig;
-	const char	*p;
+	struct sig_list {
+		int	num;
+		char   *name;
+	} sigs[] = {
+		{ SIGHUP,	"HUP",	},
+		{ SIGINT,	"INT",	},
+		{ SIGQUIT,	"QUIT",	},
+		{ SIGTERM,	"TERM",	},
+		{ SIGUSR1,	"USR1",	},
+		{ SIGUSR2,	"USR2",	},
+		{ 0,		NULL,	},
+	};
 
-	p = signame;
-	while (*p && isdigit(*p))
-		p++;
-	if (*p != '\0')
-		err(1, "invalid signal '%s'", signame);
-	sig = atoi(signame);
+	int	sig;
+
+	sig = 0;
+	if (isdigit(*signame)) {
+		const char *p;
+
+		p = signame;
+		while (*p && isdigit(*p))
+			p++;
+		if (*p != '\0')
+			errx(1, "invalid signal '%s'", signame);
+		sig = atoi(signame);
+	} else {
+		int	i;
+
+		for (i = 0; sigs[i].name != NULL; i++) {
+			if (strcasecmp(sigs[i].name, signame) == 0)
+				break;
+		}
+		sig = sigs[i].num;
+	}
 	if (sig < 1 || sig >= NSIG)
-		err(1, "signal %d out of range", sig);
+		errx(1, "signal %s out of range", signame);
 	return (sig);
 } /* parse_sig */
 
@@ -434,10 +457,10 @@ parse_wait(const char *waittime)
 	while (*p && isdigit(*p))
 		p++;
 	if (*p != '\0')
-		err(1, "invalid wait '%s'", waittime);
+		errx(1, "invalid wait '%s'", waittime);
 	wait = atoi(waittime);
 	if (wait < 0)
-		err(1, "wait %d out of range", wait);
+		errx(1, "wait %d out of range", wait);
 	return (wait);
 } /* parse_wait */
 
@@ -473,26 +496,26 @@ rotate_log(const char *log, pid_t pid, int sig, int wait)
 	splitpath(log, &logdir, &logbase);
 
 	if (stat(log, &stbuf) == -1)
-		errx(1, "can't stat '%s'", log);
+		err(1, "can't stat '%s'", log);
 
 		/* create temp file for newly rotated log */
 #undef	EXTENSION
 #define EXTENSION	".logrot.XXXXXX"
 	if (strlen(log) + sizeof(EXTENSION) + 1  >= sizeof(origlog)) {
-		warn("length of '%s' is too long", log);
+		warnx("length of '%s' is too long", log);
 		goto abort_rotate_log;
 	}
 	sprintf(origlog, "%s/%s%s", logdir, logbase, EXTENSION);
 	if ((origfd = mkstemp(origlog)) == -1) {
-		warnx("mkstemp '%s' failed", origlog);
+		warn("mkstemp '%s' failed", origlog);
 		goto abort_rotate_log;
 	}
 	if (fchmod(origfd, stbuf.st_mode) == -1) {
-		warnx("can't fchmod '%s' to %o", origlog, (int)stbuf.st_mode);
+		warn("can't fchmod '%s' to %o", origlog, (int)stbuf.st_mode);
 		goto abort_rotate_log;
 	}
 	if (fchown(origfd, stbuf.st_uid, stbuf.st_gid) == -1) {
-		warnx("can't fchown '%s' to %d,%d", origlog,
+		warn("can't fchown '%s' to %d,%d", origlog,
 		    (int)stbuf.st_uid, (int)stbuf.st_gid);
 		goto abort_rotate_log;
 	}
@@ -501,27 +524,27 @@ rotate_log(const char *log, pid_t pid, int sig, int wait)
 #undef	EXTENSION
 #define EXTENSION	".newlog.XXXXXX"
 	if (strlen(log) + sizeof(EXTENSION) + 1  >= sizeof(newlog)) {
-		warn("length of '%s' is too long", log);
+		warnx("length of '%s' is too long", log);
 		goto abort_rotate_log;
 	}
 	sprintf(newlog, "%s/%s%s", logdir, logbase, EXTENSION);
 	if ((newfd = mkstemp(newlog)) == -1) {
-		warnx("mkstemp '%s' failed", newlog);
+		warn("mkstemp '%s' failed", newlog);
 		goto abort_rotate_log;
 	}
 	if (fchmod(newfd, stbuf.st_mode) == -1) {
-		warnx("can't fchmod '%s' to %o", newlog, (int)stbuf.st_mode);
+		warn("can't fchmod '%s' to %o", newlog, (int)stbuf.st_mode);
 		goto abort_rotate_log;
 	}
 	if (fchown(newfd, stbuf.st_uid, stbuf.st_gid) == -1) {
-		warnx("can't fchown '%s' to %d,%d", newlog,
+		warn("can't fchown '%s' to %d,%d", newlog,
 		    (int)stbuf.st_uid, (int)stbuf.st_gid);
 		goto abort_rotate_log;
 	}
 
 		/* rotate the original log to the temp rotated log */
 	if (rename(log, origlog) == -1) {
-		warnx("can't rename '%s' to '%s'", log, origlog);
+		warn("can't rename '%s' to '%s'", log, origlog);
 		goto abort_rotate_log;
 	}
 		
@@ -533,7 +556,7 @@ rotate_log(const char *log, pid_t pid, int sig, int wait)
 
 		/* rotate the new log to the log */
 	if (rename(newlog, log) == -1) {
-		warnx("can't rename '%s' to '%s'", newlog, log);
+		warn("can't rename '%s' to '%s'", newlog, log);
 		goto abort_rotate_log;
 	}
 
@@ -610,6 +633,6 @@ xstrdup(const char *str)
 
 	newstr = strdup(str);
 	if (newstr == NULL)
-		err(1, "can't allocate memory");
+		errx(1, "can't allocate memory");
 	return (newstr);
 } /* xstrdup */
