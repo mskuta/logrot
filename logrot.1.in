@@ -1,6 +1,6 @@
-.\"	$Id: logrot.1.in,v 1.13 1998/08/08 01:47:31 lukem Exp $
+.\"	$Id: logrot.1.in,v 1.14 1999/07/27 15:36:40 lukem Exp $
 .\"
-.\" Copyright 1997-1999 Luke Mewburn <lukem@netbsd.org>.
+.\" Copyright 1997-2001 Luke Mewburn <lukem@netbsd.org>.
 .\" All rights reserved.
 .\"
 .\" Redistribution and use in source and binary forms, with or without
@@ -69,7 +69,7 @@ rotates the log file
 creating a new log file with the same permissions
 as the original.
 If necessary, the rotated file may be pre-processed with
-.I "preprocessor" 
+.IR "preprocessor" ,
 filtered via
 .IR "filter" ,
 compressed with
@@ -316,5 +316,5 @@ Luke Mewburn, <lukem@netbsd.org>
 .SH HISTORY
 This manual page documents
 .I logrot
-version 1.5, released on
-July 28, 1999.
+version 1.6, released on
+July 8, 2001.
