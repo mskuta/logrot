@@ -1,7 +1,7 @@
-/*	$Id: logrot.c,v 1.17 1998/06/22 04:09:14 lukem Exp $	*/
+/*	$Id: logrot.c,v 1.18 1998/08/08 01:47:32 lukem Exp $	*/
 
 /*
- * Copyright 1997, 1998 Luke Mewburn <lukem@netbsd.org>.
+ * Copyright 1997-1999 Luke Mewburn <lukem@netbsd.org>.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,7 +31,7 @@
  */
 
 #if !defined(lint)
-static char rcsid[] = "$Id: logrot.c,v 1.17 1998/06/22 04:09:14 lukem Exp $";
+static char rcsid[] = "$Id: logrot.c,v 1.18 1998/08/08 01:47:32 lukem Exp $";
 #endif /* !lint */
 
 #include "logrot.h"

@@ -1,6 +1,6 @@
-.\"	$Id: logrot.1.in,v 1.12 1998/06/26 04:06:55 lukem Exp $
+.\"	$Id: logrot.1.in,v 1.13 1998/08/08 01:47:31 lukem Exp $
 .\"
-.\" Copyright 1997, 1998 Luke Mewburn <lukem@netbsd.org>.
+.\" Copyright 1997-1999 Luke Mewburn <lukem@netbsd.org>.
 .\" All rights reserved.
 .\"
 .\" Redistribution and use in source and binary forms, with or without
@@ -31,7 +31,7 @@
 .\" logrot --
 .\"	rotate log files, with optional filtering and compression
 .\"
-.TH LOGROT 1 "August 8 1998"
+.TH LOGROT 1 "July 28 1999"
 .SH NAME
 logrot \- rotate log files
 .SH SYNOPSIS
@@ -300,7 +300,7 @@ This is not removed to allow manual rotation to occur.
 An error occurred but no temporary file exists.
 .SH FILES
 .PD 0
-.TP 20
+.TP 22
 .B !PIDFILE!
 Contains the pid of the process to signal after rotation.
 .PD
@@ -316,5 +316,5 @@ Luke Mewburn, <lukem@netbsd.org>
 .SH HISTORY
 This manual page documents
 .I logrot
-version 1.4, released on
-August 8, 1998.
+version 1.5, released on
+July 28, 1999.

@@ -1,7 +1,7 @@
-/*	$Id$	*/
+/*	$Id: strerror.c,v 1.1 1998/06/17 14:20:17 lukem Exp $	*/
 
 /*
- * Copyright 1998 Luke Mewburn <lukem@netbsd.org>.
+ * Copyright 1998, 1999 Luke Mewburn <lukem@netbsd.org>.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,7 +31,7 @@
  */
 
 #if !defined(lint)
-static char rcsid[] = "$Id$";
+static char rcsid[] = "$Id: strerror.c,v 1.1 1998/06/17 14:20:17 lukem Exp $";
 #endif /* !lint */
 
 #include "logrot.h"

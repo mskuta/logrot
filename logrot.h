@@ -1,7 +1,7 @@
-/*	$Id: logrot.h,v 1.9 1998/06/17 14:20:15 lukem Exp $	*/
+/*	$Id: logrot.h,v 1.10 1998/06/22 03:36:04 lukem Exp $	*/
 
 /*
- * Copyright 1997, 1998 Luke Mewburn <lukem@netbsd.org>.
+ * Copyright 1997-1999 Luke Mewburn <lukem@netbsd.org>.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
