@@ -42,6 +42,9 @@
 /* Define if you have the strerror function.  */
 #undef HAVE_STRERROR
 
+/* Define if you have the waitpid function.  */
+#undef HAVE_WAITPID
+
 /* Define if you have the <fcntl.h> header file.  */
 #undef HAVE_FCNTL_H
 

@@ -1,4 +1,4 @@
-dnl	$Id$
+dnl	$Id: configure.in,v 1.1 1998/03/22 11:01:55 lukem Exp $
 
 dnl
 dnl Copyright 1998 Luke Mewburn <lukem@netbsd.org>.  All rights reserved.
@@ -49,7 +49,7 @@ AC_STRUCT_TM
 AC_TYPE_SIGNAL
 AC_FUNC_STRFTIME
 AC_FUNC_VPRINTF
-AC_CHECK_FUNCS(strerror)
+AC_CHECK_FUNCS(strerror sysconf waitpid)
 AC_REPLACE_FUNCS(err mkstemp)
 
 PIDFILE="/var/run/syslog.pid"

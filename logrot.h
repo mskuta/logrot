@@ -1,4 +1,4 @@
-/*	$Id: logrot.h,v 1.6 1997/03/18 06:45:06 lukem Exp $	*/
+/*	$Id: logrot.h,v 1.7 1998/03/22 11:02:00 lukem Exp $	*/
 
 /*
  * Copyright 1997, 1998 Luke Mewburn <lukem@netbsd.org>.  All rights reserved.
@@ -29,7 +29,7 @@
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _LOGROT_H
+#if !defined(_LOGROT_H)
 #define _LOGROT_H
 
 #include "config.h"
@@ -37,81 +37,102 @@
 #include <sys/types.h>
 #include <sys/param.h>
 #include <sys/stat.h>
-#include <sys/wait.h>
 
 #include <ctype.h>
 #include <errno.h>
-#ifdef HAVE_FCNTL_H
+#if defined(HAVE_FCNTL_H)
 #include <fcntl.h>
 #endif
 #include <signal.h>
-#if defined __STDC__ || defined HAVE_STDARG_H
+#if defined(__STDC__) || defined(HAVE_STDARG_H)
 #include <stdarg.h>
 #else
 #include <varargs.h>
 #endif
 #include <stdio.h>
-#ifdef HAVE_STDLIB_H
+#if defined(HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
-#ifdef HAVE_STRING_H
+#if defined(HAVE_STRING_H)
 #include <string.h>
 #else
-#ifdef HAVE_STRINGS_H
+#if defined(HAVE_STRINGS_H)
 #include <strings.h>
 #endif
 #endif
-#ifdef HAVE_UNISTD_H
+#if defined(HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
 
-#ifdef TIME_WITH_SYS_TIME
-# include <sys/time.h>
-# include <time.h>
+#if defined(HAVE_SYS_WAIT_H)
+#include <sys/wait.h>
+#endif
+#if !defined(WEXITSTATUS)
+#define WEXITSTATUS(stat_val) ((unsigned)(stat_val) >> 8)
+#endif
+#if !defined(WIFEXITED)
+#define WIFEXITED(stat_val) (((stat_val) & 255) == 0)
+#endif
+
+#if defined(TIME_WITH_SYS_TIME)
+#include <sys/time.h>
+#include <time.h>
 #else
-# ifdef HAVE_SYS_TIME_H
-#  include <sys/time.h>
-# else
-#  include <time.h>
-# endif
+#if defined(HAVE_SYS_TIME_H)
+#include <sys/time.h>
+#else
+#include <time.h>
+#endif
+#endif
+
+#if !defined(HAVE_WAITPID)
+#error "waitpid() not available; unable to proceed"
+#endif
+
+#if !defined(HAVE_STRFTIME)
+#error "strftime() not available; unable to proceed"
 #endif
 
 
 #if defined(GZIP)
-#ifndef COMPRESS_PROG
+#if !defined(COMPRESS_PROG)
 #define COMPRESS_PROG	GZIP
 #endif
-#ifndef COMPRESS_EXT
+#if !defined(COMPRESS_EXT)
 #define COMPRESS_EXT	".gz"
 #endif
 #endif
 
-#ifndef COMPRESS_PROG
+#if !defined(COMPRESS_PROG)
 #error "gzip not available; please supply COMPRESS_PROG and COMPRESS_EXT"
 #endif
 
-#ifndef DEFAULT_PIDFILE
+#if !defined(DEFAULT_PIDFILE)
 #define DEFAULT_PIDFILE	PIDFILE
 #endif
 
-#ifndef DEFAULT_FORMAT
+#if !defined(DEFAULT_FORMAT)
 #define DEFAULT_FORMAT	"%f.%y%m%d"
 #endif
 
-#ifndef DEFAULT_SIGNAL
+#if !defined(DEFAULT_SIGNAL)
 #define DEFAULT_SIGNAL	SIGHUP
 #endif
 
-#ifndef DEFAULT_WAIT
+#if !defined(DEFAULT_WAIT)
 #define DEFAULT_WAIT	5
 #endif
 
-#ifndef PATH_BSHELL
+#if !defined(PATH_BSHELL)
 #define PATH_BSHELL	"/bin/sh"
 #endif
 
-#ifndef MAXFD
-#define MAXFD sysconf(_SC_OPEN_MAX)
+#if defined(HAVE_SYSCONF)
+#define MAXFD	sysconf(_SC_OPEN_MAX)
+#elif defined(OPEN_MAX)
+#define MAXFD	OPEN_MAX
+#else
+#error "don't know how to determine maximum number of open files"
 #endif
 
 char	*progname;		/* name of program (for error messages) */
@@ -128,10 +149,14 @@ void	splitpath(const char *, char **, char **);
 char   *xstrdup(const char *);
 
 
-#ifndef HAVE_MKSTEMP
+#if !defined(HAVE_MKSTEMP)
 int	mkstemp(char *);
 #endif
-#ifndef HAVE_ERR
+
+#if !defined(HAVE_ERR)
+#if !defined(HAVE_STRERROR)
+#error "strerror() not available; unable to compile err.c"
+#endif
 void	err(int eval, const char *fmt, ...);
 void	errx(int eval, const char *fmt, ...);
 void	warn(const char *fmt, ...);

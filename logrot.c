@@ -1,4 +1,4 @@
-/*	$Id: logrot.c,v 1.11 1997/04/02 06:28:29 lukem Exp $	*/
+/*	$Id: logrot.c,v 1.12 1998/03/22 11:01:59 lukem Exp $	*/
 
 /*
  * Copyright 1997, 1998 Luke Mewburn <lukem@netbsd.org>.  All rights reserved.
@@ -30,7 +30,7 @@
  */
 
 #if !defined(lint)
-static char rcsid[] = "$Id: logrot.c,v 1.11 1997/04/02 06:28:29 lukem Exp $";
+static char rcsid[] = "$Id: logrot.c,v 1.12 1998/03/22 11:01:59 lukem Exp $";
 #endif /* !lint */
 
 #include "logrot.h"
@@ -288,9 +288,11 @@ filter_log(const char *origlog, const char *rotlog, const char *filter_prog,
 				if (WEXITSTATUS(rstat) != 0)
 					errx(ecode, "'%s' exited with %d",
 					    filter_prog, WEXITSTATUS(rstat));
+#if defined(WIFSIGNALED)
 			} else if (WIFSIGNALED(rstat) != 0) {
 				errx(ecode, "'%s' exited due to signal %d",
 				    filter_prog, WTERMSIG(rstat));
+#endif
 			} else {
 				errx(ecode, "'%s' returned status %d - why?",
 				    filter_prog, rstat);
@@ -303,9 +305,11 @@ filter_log(const char *origlog, const char *rotlog, const char *filter_prog,
 				if (WEXITSTATUS(rstat) != 0)
 					errx(ecode, "'%s' exited with %d",
 					    compress_prog, WEXITSTATUS(rstat));
+#if defined(WIFSIGNALED)
 			} else if (WIFSIGNALED(rstat) != 0) {
 				errx(ecode, "'%s' exited due to signal %d",
 				    compress_prog, WTERMSIG(rstat));
+#endif
 			} else {
 				errx(ecode, "'%s' returned status %d - why?",
 				    compress_prog, rstat);
