@@ -1,4 +1,4 @@
-.\"	$Id: logrot.man,v 1.1 1997/02/27 11:44:25 lukem Exp $
+.\"	$Id: logrot.man,v 1.2 1997/03/18 06:45:06 lukem Exp $
 .\"
 .\" Copyright 1997 Luke Mewburn <lukem@netbsd.org>.  All rights reserved.
 .\"
@@ -108,7 +108,6 @@ The
 character allows for escape sequences, a la
 .IR "printf" (3).
 The following escape sequences are supported:
-.B "%%"
 \`%%\' - a \`%\' sign.
 \`%d\' \-
 .IR "dirname" (1)
