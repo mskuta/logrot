@@ -1,4 +1,4 @@
-#	$Id: Makefile.in,v 1.4 1998/06/17 14:26:22 lukem Exp $
+#	$Id: Makefile.in,v 1.5 1999/07/27 15:36:33 lukem Exp $
 
 #
 # Copyright 1998, 1999 Luke Mewburn <lukem@netbsd.org>.
@@ -66,7 +66,7 @@ SHELL = /bin/sh
 # This rule allows us to supply the necessary -D options
 # in addition to whatever the user asks for.
 .c.o:
-	${CC} -I${srcdir} ${CPPFLAGS} ${CFLAGS} ${DEFS} -c $<
+	${CC} -I${srcdir} -I. ${CPPFLAGS} ${CFLAGS} ${DEFS} -c $<
 
 OBJ = logrot.o stringlist.o @LIBOBJS@
 
@@ -80,13 +80,13 @@ logrot: ${OBJ}
 logrot.1:	logrot.1.in Makefile
 	@rm -f logrot.1
 	sed -e 's%!PIDFILE!%'${PIDFILE}'%' -e 's%!GZIP!%'${GZIP}'%' \
-	    < logrot.1.in > logrot.1
+	    < ${srcdir}/logrot.1.in > logrot.1
 
 ${OBJ}: ${srcdir}/logrot.h config.h 
 
-install: all ${srcdir}/logrot.1 installdirs
+install: all logrot.1 installdirs
 	${INSTALL_PROGRAM} logrot ${bindir}/${binprefix}logrot
-	${INSTALL_DATA} ${srcdir}/logrot.1 ${mandir}/${manprefix}logrot.${manext}
+	${INSTALL_DATA} logrot.1 ${mandir}/${manprefix}logrot.${manext}
 
 installdirs: mkinstalldirs
 	${srcdir}/mkinstalldirs ${bindir} ${mandir}
