@@ -1,4 +1,4 @@
-.\"	$Id: logrot.1.in,v 1.7 1998/03/22 11:01:58 lukem Exp $
+.\"	$Id: logrot.1.in,v 1.8 1998/03/22 11:32:57 lukem Exp $
 .\"
 .\" Copyright 1997, 1998 Luke Mewburn <lukem@netbsd.org>.  All rights reserved.
 .\"
@@ -30,7 +30,7 @@
 .\" logrot --
 .\"	rotate log files, with optional filtering and compression
 .\"
-.TH LOGROT 1 "November 20 1997"
+.TH LOGROT 1 "March 22 1998"
 .SH NAME
 logrot \- rotate log files
 .SH SYNOPSIS
