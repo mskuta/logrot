@@ -1,5 +1,5 @@
 /*
- * $Id: logrot.c,v 1.7 1997/02/22 17:09:13 lukem Exp $
+ * $Id: logrot.c,v 1.8 1997/02/23 23:23:49 lukem Exp $
  */
 
 /*
@@ -173,7 +173,8 @@ main(int argc, char *argv[])
  *	If compress_prog != NULL, compress_ext is appended
  *	to rotlog to generate the resultant filename.
  *	Sets the permissions and modification time of rotlog
- *	to those of origlog, and then unlinks origlog.
+ *	to those of origlog, and then unlinks origlog if an
+ *	error didn't occur in the filtering.
  *	Returns a pointer to a malloc(3)ed string containing the
  *	resultant filename.
  */
@@ -223,7 +224,7 @@ filter_log(const char *origlog, const char *rotlog, const char *filter_prog,
 			for (junkfd = 3 ; junkfd < MAXFD; junkfd++)
 				close(junkfd);
 			execl(PATH_BSHELL, "sh", "-c", filter_prog, NULL);
-			err(1, "can't exec sh to run %s", filter_prog);
+			err(1, "can't exec sh to run '%s'", filter_prog);
 		default:
 			if (ispipe)
 				close(pipefd[0]);
@@ -243,7 +244,7 @@ filter_log(const char *origlog, const char *rotlog, const char *filter_prog,
 			for (junkfd = 3 ; junkfd < MAXFD; junkfd++)
 				close(junkfd);
 			execl(PATH_BSHELL, "sh", "-c", compress_prog, NULL);
-			err(1, "can't exec sh to run %s", compress_prog);
+			err(1, "can't exec sh to run '%s'", compress_prog);
 		default:
 			if (ispipe)
 				close(pipefd[1]);
@@ -264,30 +265,30 @@ filter_log(const char *origlog, const char *rotlog, const char *filter_prog,
 				in -= out;
 			}
 			if (out == -1)
-				err(1, "writing %s", outfile);
+				err(1, "writing '%s'", outfile);
 		}
 		if (in == -1)
-			err(1, "reading %s", origlog);
+			err(1, "reading '%s'", origlog);
 
 			/*
 			 * filtering via process(es) occurring
 			 */
 	} else while (filter_pid != -1 || compress_pid != -1) {
 			/*
-			 * XXX differentiate between child being stopped
-			 * with SIGSTOP or SIGTSTP and child exiting ok
+			 * XXX:	differentiate between child being stopped
+			 *	with SIGSTOP/SIGTSTP, and child exiting ok.
 			 */
 		if ((filter_pid != -1) &&
 		    (waitpid(filter_pid, &rstat, WNOHANG) != 0)) {
 			if (WIFEXITED(rstat) != 0) {
 				if (WEXITSTATUS(rstat) != 0)
-					warnx("%s exited with %d",
+					errx(1, "'%s' exited with %d",
 					    filter_prog, WEXITSTATUS(rstat));
 			} else if (WIFSIGNALED(rstat) != 0) {
-				warnx("%s exited due to signal %d",
+				errx(1, "'%s' exited due to signal %d",
 				    filter_prog, WTERMSIG(rstat));
 			} else {
-				warnx("%s returned status %d - why?",
+				errx(1, "'%s' returned status %d - why?",
 				    filter_prog, rstat);
 			}
 			filter_pid = -1;
@@ -296,13 +297,13 @@ filter_log(const char *origlog, const char *rotlog, const char *filter_prog,
 		    (waitpid(compress_pid, &rstat, WNOHANG) != 0)) {
 			if (WIFEXITED(rstat) != 0) {
 				if (WEXITSTATUS(rstat) != 0)
-					warnx("%s exited with %d",
+					errx(1, "'%s' exited with %d",
 					    compress_prog, WEXITSTATUS(rstat));
 			} else if (WIFSIGNALED(rstat) != 0) {
-				warnx("%s exited due to signal %d",
+				errx(1, "'%s' exited due to signal %d",
 				    compress_prog, WTERMSIG(rstat));
 			} else {
-				warnx("%s returned status %d - why?",
+				errx(1, "'%s' returned status %d - why?",
 				    compress_prog, rstat);
 			}
 			compress_pid = -1;
@@ -320,7 +321,7 @@ filter_log(const char *origlog, const char *rotlog, const char *filter_prog,
 	close(infd);
 	close(outfd);
 	if (unlink(origlog) == -1)
-		err(1, "can't unlink %s", origlog);
+		err(1, "can't unlink '%s'", origlog);
 
 	return (xstrdup(outfile));
 } /* filter_log */

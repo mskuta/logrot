@@ -1,0 +1,240 @@
+.\"	$Id$
+.\"
+.\" Copyright 1997 Luke Mewburn <lukem@netbsd.org>.  All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\" 3. All advertising materials mentioning features or use of this software
+.\"    must display the following acknowledgement:
+.\" 	This product includes software developed by Luke Mewburn.
+.\" 4. The name of the author may not be used to endorse or promote products
+.\"    derived from this software without specific prior written permission.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+.\" IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+.\" OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+.\" IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+.\" INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+.\" BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
+.\" OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+.\" ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
+.\" TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+.\" USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+.\"
+.\" logrot --
+.\"	rotate log files, with optional filtering and compression
+.\"
+.TH LOGROT 1 "February 27 1997"
+.SH NAME
+logrot \- rotate log files
+.SH SYNOPSIS
+.B logrot
+.RB [ \-c ]
+.RB [ \-C\c
+.IR "\ compressor" ]
+.RB [ \-d\c
+.IR "\ destdir" ]
+.RB [ \-f\c
+.IR "\ filter" ]
+.RB [ \-F\c
+.IR "\ postfilter" ]
+.RB [ \-p\c
+.IR "\ pidfile" ]
+.RB [ \-r\c
+.IR "\ rotatefmt" ]
+.RB [ \-s\c
+.IR "\ sig" ]
+.RB [ \-w\c
+.IR "\ wait" ]
+.RB [ \-X\c
+.IR "\ compressext" ]
+.I "file"
+.SH DESCRIPTION
+.I logrot
+rotates the log file
+.I file, creating a new log file with the same permissions
+as the original.
+If necessary, the rotated file can be optionally filtered via
+.IR "filter" ,
+compressed with
+.IR "compressor" ,
+and post-processed with
+.IR "postfilter" .
+.PP
+.I logrot
+attempts to rotate the file as atomically as possible, in that the
+time window in which
+.I file
+doesn't exist is minimised.
+.PP
+A signal
+.I sig
+can be sent to a process id stored in
+.IR "pidfile" ,
+and a time delay of
+.I wait
+seconds will occur before performing any filtering.
+.PP
+The name of the rotate file can be configured by specifying
+the format string
+.IR "rotatefmt" ,
+and the target directory is
+given in
+.IR "destdir" .
+.SH OPTIONS
+.I logrot
+accepts the following options (in the following list,
+.I rotfile
+is the name of the rotated file):
+.TP 8
+.B \-c
+Compress data before storing in
+.I rotfile.
+.TP
+.BI \-C " compressor"
+Use
+.I compressor
+as the compression program for
+.BR "\-c" .
+Defaults to
+.IR "gzip" (1).
+.TP
+.BI \-d " destdir"
+Store
+.I rotfile
+in
+.IR "destdir" .
+Defaults to \`\fIfile\fR.d\'.
+.TP
+.BI \-f " filter"
+Filter
+.I file
+through
+.I filter
+before optional compression and output to
+.IR "rotfile" .
+.TP
+.BI \-F " postfilter"
+Postprocess
+.I rotfile
+with
+.IR "postfilter" .
+The
+.B "%"
+character allows for escape sequences, a la
+.IR "printf" (3).
+The following escape sequences are supported:
+.B "%%"
+\`%%\' - a \`%\' sign.
+\`%d\' \-
+.IR "dirname" (1)
+of
+.IR "rotfile" .
+\`%f\' \-
+.IR "basename" (1)
+of
+.IR "rotfile" .
+\`%p\' \-
+full pathname of
+.IR "rotfile" .
+.TP
+.BI \-p " pidfile"
+Contains the pid of the process to signal with
+.BI \-s " sig"
+when the rotation has occurred.
+The first word on the first line of
+.I pidfile
+is assumed to be the pid.
+.TP
+.BI \-r " rotatefmt"
+Format of rotated filename, which is relative to 
+.BI \-d " destdir".
+Escape characters a la
+.IR "printf" (3)
+are available; refer to
+.B "ROTATE FORMAT ESCAPE SEQUENCES"
+below for more information.
+.TP
+.BI \-s " sig"
+The signal to send to the process defined in
+.BI \-p " pidfile"
+after
+.BI \-w " wait"
+seconds have expired.
+.TP
+.BI \-w " wait"
+Seconds to wait before sending the 
+.BI \-s " sig"
+signal.
+.TP
+.BI \-X " compressext"
+Extension to append to
+.I rotfile
+if compression occurred.
+Defaults to \`.gz\'.
+.SS ROTATE FORMAT ESCAPE SEQUENCES
+The
+.I rotatefmt
+specified in 
+.BI \-r " rotatefmt"
+can have escape sequences with
+.B "%"
+a la
+.IR "printf" (3).
+All of the date/time escapes are generated with the same named sequence from
+.IR "strftime" (3).
+.PP
+The following escape sequences are available:
+.TP 6
+.B %%
+A \`%\' sign.
+.TP
+.B %f
+The
+.IR "basename" (1)
+of
+.IR "file" .
+.TP
+.B %y
+Current year within century (e.g, 97).
+.TP
+.B %Y
+Current year, including century (e.g, 1997)
+.TP
+.B %m
+Current month, with leading 0 if necessary (e.g., 02)
+.TP
+.B %d
+Current day, with leading 0 if necessary (e.g., 27)
+.TP
+.B %H
+Current hour (24-hour clock), with leading 0 if necessary (e.g., 23)
+.TP
+.B %M
+Current minute, with leading 0 if necessary (e.g., 09)
+.TP
+.B %S
+Current second, with leading 0 if necessary (e.g., 42)
+.SH DIAGNOSITICS
+.I logrot
+will exit with a value of 1 upon any error.
+.PP
+If the error occurred after the rotation occurred but before the
+filtering completed successfully, then a temporary file of the
+form \`\fIfile\fR.logrot.XXXXXX\' (where \`XXXXXX\' is replaced
+with a random number) will remain in the filesystem.
+This is not removed to allow manual rotation to occur.
+.SH SEE ALSO
+.IR "basename" (1),
+.IR "dirname" (1),
+.IR "gzip" (1),
+.IR "strftime" (3),
+.IR "syslogd" (8)
+.SH AUTHOR
+Luke Mewburn, <lukem@netbsd.org>
