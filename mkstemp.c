@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: mktemp.c,v 1.1.1.1 1997/02/17 11:23:37 lukem Exp $
  */
 
 /*	$NetBSD: mktemp.c,v 1.5 1995/02/02 02:10:09 jtc Exp $	*/
@@ -36,6 +36,10 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
+
+#if !defined(lint)
+static char rcsid[] = "$Id$";
+#endif /* !lint */
 
 #if defined(LIBC_SCCS) && !defined(lint)
 #if 0

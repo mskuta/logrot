@@ -1,4 +1,4 @@
-.\"	$Id: logrot.man,v 1.3 1997/04/01 03:24:54 lukem Exp $
+.\"	$Id: logrot.man,v 1.4 1997/04/01 06:06:59 lukem Exp $
 .\"
 .\" Copyright 1997 Luke Mewburn <lukem@netbsd.org>.  All rights reserved.
 .\"
@@ -184,9 +184,9 @@ below for more information.
 .BI \-s " sig"
 The signal to send to the process defined in
 .BI \-p " pidfile"
-after
+before waiting for 
 .BI \-w " wait"
-seconds have expired.
+seconds to expire.
 May be one of
 .IR "HUP" ,
 .IR "INT" ,
@@ -203,9 +203,9 @@ is \`0\', then don't send a signal to
 .IR "pidfile" .
 .TP
 .BI \-w " wait"
-Seconds to wait before sending the 
+Seconds to wait after sending the 
 .BI \-s " sig"
-signal.
+signal before performing any further processing.
 .TP
 .BI \-X " compressext"
 Extension to append to
@@ -257,13 +257,21 @@ Current minute, with leading 0 if necessary (e.g., 09)
 Current second, with leading 0 if necessary (e.g., 42)
 .SH DIAGNOSITICS
 .I logrot
-will exit with a value of 1 upon any error.
-.PP
-If the error occurred after the rotation occurred but before the
-filtering completed successfully, then a temporary file of the
+will exit with one of the following values:
+.TP 4
+.B 0
+No error occurred.
+.TP
+.B 1
+An error occurred after the rotation occurred but before the
+filtering completed successfully.
+A temporary file of the
 form \`\fIfile\fR.logrot.XXXXXX\' (where \`XXXXXX\' is replaced
 with a random number) will remain in the filesystem.
 This is not removed to allow manual rotation to occur.
+.TP
+.B 2
+An error occurred but no temporary file exists.
 .SH FILES
 .PD 0
 .TP 20

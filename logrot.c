@@ -1,5 +1,5 @@
 /*
- * $Id: logrot.c,v 1.9 1997/02/27 11:44:25 lukem Exp $
+ * $Id: logrot.c,v 1.10 1997/03/18 06:45:06 lukem Exp $
  */
 
 /*
@@ -31,6 +31,10 @@
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#if !defined(lint)
+static char rcsid[] = "$Id$";
+#endif /* !lint */
+
 #include <sys/types.h>
 #include <sys/param.h>
 #include <sys/stat.h>
@@ -50,6 +54,14 @@
 
 
 /*
+ * failure exit value:
+ *	1 = temp file exists
+ *	2 = no temp file
+ */
+int ecode;
+
+
+/*
  * usage --
  *	Display a usage message and exit
  */
@@ -61,9 +73,8 @@ usage()
 "\t\t[-F postprocessor] [-p pidfile] [-r rotate_format] [-s sig]\n"
 "\t\t[-w wait] [-X compress_extension] file\n",
 	    progname);
-	exit(1);
+	exit(ecode);
 } /* usage */
-
 
 /*
  * main --
@@ -92,6 +103,8 @@ main(int argc, char *argv[])
 	char	*origlog, *rotlog, *finallog;
 
 	(void) umask(077);		/* be safe when creating temp files */
+
+	ecode = 2;			/* exit val for no temp file */
 
 	splitpath(argv[0], &origlog, &progname);
 	free(origlog);
@@ -198,16 +211,16 @@ filter_log(const char *origlog, const char *rotlog, const char *filter_prog,
 	if ((strlen(rotlog) +
 	    (compress_prog != NULL ? strlen(compress_ext) : 0) + 1) >
 	    sizeof(outfile))
-		errx(1, "rotated filename would be too long");
+		errx(ecode, "rotated filename would be too long");
 	strcpy(outfile, rotlog);
 	if (compress_prog != NULL)
 		strcat(outfile, compress_ext);
 
 	if ((infd = open(origlog, O_RDONLY)) == -1)
-		err(1, "can't open '%s'", origlog);
+		err(ecode, "can't open '%s'", origlog);
 
 	if ((outfd = open(outfile, O_WRONLY | O_CREAT | O_EXCL, 0700)) == -1)
-		err(1, "can't open '%s' for writing", outfile);
+		err(ecode, "can't open '%s' for writing", outfile);
 
 	filter_pid = -1;
 	compress_pid = -1;
@@ -215,24 +228,24 @@ filter_log(const char *origlog, const char *rotlog, const char *filter_prog,
 
 	if (filter_prog && compress_prog) {
 		if (pipe(pipefd) == -1)
-			err(1, "can't create pipe");
+			err(ecode, "can't create pipe");
 		ispipe = 1;
 	}
 
 	if (filter_prog) {
 		switch (filter_pid = fork()) {
 		case -1:
-			err(1, "can't fork");
+			err(ecode, "can't fork");
 		case 0:
 			if (dup2(infd, fileno(stdin)) == -1)
-				err(1, "can't dup2 filter stdin");
+				err(ecode, "can't dup2 filter stdin");
 			if (dup2(ispipe ? pipefd[0] : outfd,
 			    fileno(stdout)) == -1)
-				err(1, "can't dup2 filter stdout");
+				err(ecode, "can't dup2 filter stdout");
 			for (junkfd = 3 ; junkfd < MAXFD; junkfd++)
 				close(junkfd);
 			execl(PATH_BSHELL, "sh", "-c", filter_prog, NULL);
-			err(1, "can't exec sh to run '%s'", filter_prog);
+			err(ecode, "can't exec sh to run '%s'", filter_prog);
 		default:
 			if (ispipe)
 				close(pipefd[0]);
@@ -242,17 +255,17 @@ filter_log(const char *origlog, const char *rotlog, const char *filter_prog,
 	if (compress_prog) {
 		switch (compress_pid = fork()) {
 		case -1:
-			err(1, "can't fork");
+			err(ecode, "can't fork");
 		case 0:
 			if (dup2(ispipe ? pipefd[1] : infd,
 			    fileno(stdin)) == -1)
-				err(1, "can't dup2 compress stdin");
+				err(ecode, "can't dup2 compress stdin");
 			if (dup2(outfd, fileno(stdout)) == -1)
-				err(1, "can't dup2 compress stdout");
+				err(ecode, "can't dup2 compress stdout");
 			for (junkfd = 3 ; junkfd < MAXFD; junkfd++)
 				close(junkfd);
 			execl(PATH_BSHELL, "sh", "-c", compress_prog, NULL);
-			err(1, "can't exec sh to run '%s'", compress_prog);
+			err(ecode, "can't exec sh to run '%s'", compress_prog);
 		default:
 			if (ispipe)
 				close(pipefd[1]);
@@ -273,10 +286,10 @@ filter_log(const char *origlog, const char *rotlog, const char *filter_prog,
 				in -= out;
 			}
 			if (out == -1)
-				err(1, "writing '%s'", outfile);
+				err(ecode, "writing '%s'", outfile);
 		}
 		if (in == -1)
-			err(1, "reading '%s'", origlog);
+			err(ecode, "reading '%s'", origlog);
 
 			/*
 			 * filtering via process(es) occurring
@@ -290,13 +303,13 @@ filter_log(const char *origlog, const char *rotlog, const char *filter_prog,
 		    (waitpid(filter_pid, &rstat, WNOHANG) != 0)) {
 			if (WIFEXITED(rstat) != 0) {
 				if (WEXITSTATUS(rstat) != 0)
-					errx(1, "'%s' exited with %d",
+					errx(ecode, "'%s' exited with %d",
 					    filter_prog, WEXITSTATUS(rstat));
 			} else if (WIFSIGNALED(rstat) != 0) {
-				errx(1, "'%s' exited due to signal %d",
+				errx(ecode, "'%s' exited due to signal %d",
 				    filter_prog, WTERMSIG(rstat));
 			} else {
-				errx(1, "'%s' returned status %d - why?",
+				errx(ecode, "'%s' returned status %d - why?",
 				    filter_prog, rstat);
 			}
 			filter_pid = -1;
@@ -305,13 +318,13 @@ filter_log(const char *origlog, const char *rotlog, const char *filter_prog,
 		    (waitpid(compress_pid, &rstat, WNOHANG) != 0)) {
 			if (WIFEXITED(rstat) != 0) {
 				if (WEXITSTATUS(rstat) != 0)
-					errx(1, "'%s' exited with %d",
+					errx(ecode, "'%s' exited with %d",
 					    compress_prog, WEXITSTATUS(rstat));
 			} else if (WIFSIGNALED(rstat) != 0) {
-				errx(1, "'%s' exited due to signal %d",
+				errx(ecode, "'%s' exited due to signal %d",
 				    compress_prog, WTERMSIG(rstat));
 			} else {
-				errx(1, "'%s' returned status %d - why?",
+				errx(ecode, "'%s' returned status %d - why?",
 				    compress_prog, rstat);
 			}
 			compress_pid = -1;
@@ -320,16 +333,18 @@ filter_log(const char *origlog, const char *rotlog, const char *filter_prog,
 	}
 
 	if (fstat(infd, &stbuf) == -1)
-		err(1, "can't stat '%s'", outfile);
+		err(ecode, "can't stat '%s'", outfile);
 	if (fchmod(outfd, stbuf.st_mode) == -1)
-		err(1, "can't fchmod '%s' to %o", outfile, (int)stbuf.st_mode);
+		err(ecode, "can't fchmod '%s' to %o", outfile,
+		    (int)stbuf.st_mode);
 	if (fchown(outfd, stbuf.st_uid, stbuf.st_gid) == -1)
-		err(1, "can't fchown '%s' to %d,%d", outfile,
+		err(ecode, "can't fchown '%s' to %d,%d", outfile,
 		    (int)stbuf.st_uid, (int)stbuf.st_gid);
 	close(infd);
 	close(outfd);
 	if (unlink(origlog) == -1)
-		err(1, "can't unlink '%s'", origlog);
+		err(ecode, "can't unlink '%s'", origlog);
+	ecode = 2;	/* temp file gone; set exit code to indicate this */
 
 	return (xstrdup(outfile));
 } /* filter_log */
@@ -348,7 +363,7 @@ parse_pid(const char *pidfile)
 	pid_t	pid;
 
 	if ((pf = fopen(pidfile, "r")) == NULL)
-		err(1, "can't open '%s'", pidfile);
+		err(ecode, "can't open '%s'", pidfile);
 	pid = 0;
 	if (fgets(buf, sizeof(buf), pf) != NULL) {
 		p = buf;
@@ -361,10 +376,10 @@ parse_pid(const char *pidfile)
 	}
 	fclose(pf);
 	if (pid == 0)
-		errx(1, "can't parse pid from '%s'", pidfile);
+		errx(ecode, "can't parse pid from '%s'", pidfile);
 
 	if (kill(pid, 0) == -1)
-		errx(1, "can't send test signal 0 to pid %d", (int)pid);
+		errx(ecode, "can't send test signal 0 to pid %d", (int)pid);
 
 	return (pid);
 } /* parse_pid */
@@ -390,7 +405,7 @@ parse_rotate_fmt(const char *fmt, const char *dir, const char *log, time_t now)
 
 	tmnow = localtime(&now);
 	if (strlen(log) + (dir ? strlen(dir) : 0) + 3 > sizeof(buf))
-		errx(1, "format '%s' is too long", fmt);
+		errx(ecode, "format '%s' is too long", fmt);
 	splitpath(log, &logdir, &logbase);
 
 	bufend = buf + sizeof(buf) - 1;
@@ -409,7 +424,7 @@ parse_rotate_fmt(const char *fmt, const char *dir, const char *log, time_t now)
 
 	for (from = fmt; *from; from++) {
 		if (to > bufend)
-			errx(1, "format '%s' is too long", fmt);
+			errx(ecode, "format '%s' is too long", fmt);
 		if (*from != '%') {
 			*to++ = *from;
 			continue;
@@ -417,7 +432,7 @@ parse_rotate_fmt(const char *fmt, const char *dir, const char *log, time_t now)
 		from++;
 		switch (*from) {
 		case '\0':
-			errx(1, "%% format requires a specifier");
+			errx(ecode, "%% format requires a specifier");
 		case '%':
 			*to++ = *from;
 			break;
@@ -426,7 +441,7 @@ parse_rotate_fmt(const char *fmt, const char *dir, const char *log, time_t now)
 			while (*junk1 && to <= bufend)
 				*to++ = *junk1++;
 			if (*junk1)
-				errx(1, "%%%c in format '%s' is too long",
+				errx(ecode, "%%%c in format '%s' is too long",
 				    *from, fmt);
 			break;
 		case 'y':
@@ -440,15 +455,15 @@ parse_rotate_fmt(const char *fmt, const char *dir, const char *log, time_t now)
 			to += strftime(to, bufend - to, junk2, tmnow);
 			break;
 		default:
-			errx(1, "%%%c not supported in rotate_fmt", *from);
+			errx(ecode, "%%%c not supported in rotate_fmt", *from);
 		}
 	}
 
 	if (stat(buf, &stbuf) == -1) {
 		if (errno != ENOENT)
-			err(1, "can't stat %s", buf);
+			err(ecode, "can't stat %s", buf);
 	} else
-		errx(1, "%s already exists", buf);
+		errx(ecode, "%s already exists", buf);
 
 	free(logdir);
 	free(logbase);
@@ -486,7 +501,7 @@ parse_sig(const char *signame)
 		while (*p && isdigit(*p))
 			p++;
 		if (*p != '\0')
-			errx(1, "invalid signal '%s'", signame);
+			errx(ecode, "invalid signal '%s'", signame);
 		sig = atoi(signame);
 	} else {
 		int	i;
@@ -498,7 +513,7 @@ parse_sig(const char *signame)
 		sig = sigs[i].num;
 	}
 	if (sig < 0 || sig >= NSIG)
-		errx(1, "signal %s out of range", signame);
+		errx(ecode, "signal %s out of range", signame);
 	return (sig);
 } /* parse_sig */
 
@@ -517,10 +532,10 @@ parse_wait(const char *waittime)
 	while (*p && isdigit(*p))
 		p++;
 	if (*p != '\0')
-		errx(1, "invalid wait '%s'", waittime);
+		errx(ecode, "invalid wait '%s'", waittime);
 	wait = atoi(waittime);
 	if (wait < 0)
-		errx(1, "wait %d out of range", wait);
+		errx(ecode, "wait %d out of range", wait);
 	return (wait);
 } /* parse_wait */
 
@@ -531,7 +546,7 @@ parse_wait(const char *waittime)
  */
 void
 process_log(const char *log, const char *prog)
-{
+{ /* XXX: check retvals here */
 	const char	*from;
 	char		*logdir, *logbase;
 	char		*command, *to;
@@ -549,7 +564,7 @@ process_log(const char *log, const char *prog)
 		from++;
 		switch (*from) {
 		case '\0':
-			errx(1, "%% format requires a specifier");
+			errx(ecode, "%% format requires a specifier");
 		case '%':
 			cmdlen++;
 			break;
@@ -563,16 +578,17 @@ process_log(const char *log, const char *prog)
 			cmdlen += strlen(log);
 			break;
 		default:
-			errx(1, "%%%c not supported in postfilter_log", *from);
+			errx(ecode, "%%%c not supported in postfilter_log",
+			    *from);
 		}
 	}
 	command = (char *) malloc((cmdlen + 1) * sizeof(char *));
 	if (command == NULL)
-		errx(1, "can't allocate memory");
+		errx(ecode, "can't allocate memory");
 	to = command;
 	for (from = prog; *from; from++) {
 		if (to >= command + cmdlen)
-			errx(1,
+			errx(ecode,
 			    "postfilter_log buffer overrun (shouldn't happen)");
 		if (*from != '%') {
 			*to++ = *from;
@@ -596,22 +612,22 @@ process_log(const char *log, const char *prog)
 			to += strlen(log);
 			break;
 		default:
-			errx(1, "%%%c unexpected in postfilter_log", *from);
+			errx(ecode, "%%%c unexpected in postfilter_log", *from);
 		}
 	}
 	*to++ = '\0';
 
 	switch (pid = fork()) {
 	case -1:
-		err(1, "can't fork");
+		err(ecode, "can't fork");
 	case 0:
 		for (pid = 3 ; pid < MAXFD; pid++)
 			close(pid);
 		execl(PATH_BSHELL, "sh", "-c", command, NULL);
-		err(1, "can't exec sh to run %s", command);
+		err(ecode, "can't exec sh to run %s", command);
 	default:
 		if (waitpid(pid, NULL, 0) == -1)
-			errx(1, "error running %s", command);
+			errx(ecode, "error running %s", command);
 	}
 	free(logdir);
 	free(logbase);
@@ -638,7 +654,7 @@ rotate_log(const char *log, pid_t pid, int sig, int wait)
 	splitpath(log, &logdir, &logbase);
 
 	if (stat(log, &stbuf) == -1)
-		err(1, "can't stat '%s'", log);
+		err(ecode, "can't stat '%s'", log);
 
 		/* create temp file for newly rotated log */
 #undef	EXTENSION
@@ -702,14 +718,16 @@ rotate_log(const char *log, pid_t pid, int sig, int wait)
 		goto abort_rotate_log;
 	}
 
+	ecode = 1;	/* temp file exists; set exit code to indicate this */
+
 	close(newfd);
 	close(origfd);
 
-		/* wait a bit then signal the process */
+		/* signal the process then wait a bit */
 	if (pid != 0) {
-		sleep(wait);
 		if (kill(pid, sig) == -1)
-			errx(1, "can't send sig %d to %d", sig, (int)pid);
+			errx(ecode, "can't send sig %d to %d", sig, (int)pid);
+		sleep(wait);
 	}
 
 	free(logdir);
@@ -727,7 +745,7 @@ abort_rotate_log:
 	}
 	free(logdir);
 	free(logbase);
-	exit(1);
+	exit(ecode);
 } /* rotate_log */
 
 
@@ -775,6 +793,6 @@ xstrdup(const char *str)
 
 	newstr = strdup(str);
 	if (newstr == NULL)
-		errx(1, "can't allocate memory");
+		errx(ecode, "can't allocate memory");
 	return (newstr);
 } /* xstrdup */

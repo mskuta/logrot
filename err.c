@@ -1,5 +1,5 @@
 /*
- * $Id: err.c,v 1.2 1997/02/17 13:36:46 lukem Exp $
+ * $Id: err.c,v 1.3 1997/02/18 01:00:23 lukem Exp $
  */
 
 /*
@@ -30,6 +30,10 @@
  * TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#if !defined(lint)
+static char rcsid[] = "$Id$";
+#endif /* !lint */
 
 #include <sys/types.h>
 
