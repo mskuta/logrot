@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: logrot.h,v 1.2 1997/02/17 13:36:47 lukem Exp $
  */
 
 /*
@@ -67,6 +67,7 @@ char   *xstrdup(const char *);
 
 void	err(int eval, const char *fmt, ...);
 void	errx(int eval, const char *fmt, ...);
+int	getdtablesize(void);
 int	mkstemp(char *);
 void	warn(const char *fmt, ...);
 void	warnx(const char *fmt, ...);

@@ -1,5 +1,5 @@
 /*
- * $Id: logrot.c,v 1.3 1997/02/18 01:00:24 lukem Exp $
+ * $Id: logrot.c,v 1.4 1997/02/18 03:43:29 lukem Exp $
  */
 
 /*
@@ -375,6 +375,9 @@ parse_rotate_fmt(const char *fmt, const char *dir, const char *log, time_t now)
 		switch (*from) {
 		case '\0':
 			errx(1, "%% format requires a specifier");
+		case '%':
+			*to++ = *from;
+			break;
 		case 'f':
 			junk1 = logbase;
 			while (*junk1 && to <= bufend)
@@ -393,7 +396,7 @@ parse_rotate_fmt(const char *fmt, const char *dir, const char *log, time_t now)
 			to += strftime(to, bufend - to, junk2, tmnow);
 			break;
 		default:
-			errx(1, "%%%c not supported", *from);
+			errx(1, "%%%c not supported in rotate_fmt", *from);
 		}
 	}
 
@@ -485,7 +488,63 @@ parse_wait(const char *waittime)
 void
 postfilter_log(const char *log, const char *prog)
 {
-	/* XXX: implement */
+	const char	*from;
+	char		*command, *to;
+	size_t		 cmdlen, loglen;
+
+	cmdlen = 0;
+	loglen = strlen(log);
+
+	for (from = prog; *from; from++) {
+		if (*from != '%') {
+			cmdlen++;
+			continue;
+		}
+		from++;
+		switch (*from) {
+		case '\0':
+			warnx("%% format requires a specifier");
+			return;
+		case '%':
+			cmdlen++;
+			break;
+		case 'f':
+			cmdlen += loglen;
+			break;
+		default:
+			warnx("%%%c not supported in postfilter_log", *from);
+			return;
+		}
+	}
+	command = (char *) malloc((cmdlen + 1) * sizeof(char *));
+	if (command == NULL)
+		errx(1, "can't allocate memory");
+	to = command;
+	for (from = prog; *from; from++) {
+		if (to >= command + cmdlen)
+			errx(1,
+			    "postfilter_log buffer overrun (shouldn't happen)");
+		if (*from != '%') {
+			*to++ = *from;
+			continue;
+		}
+		from++;
+		switch (*from) {
+		case '%':
+			*to++ = *from;
+			break;
+		case 'f':
+			(void) strcat(to, log);
+			to += loglen;
+			break;
+		default:
+			errx(1, "%%%c unexpected in postfilter_log", *from);
+		}
+	}
+	*to++ = '\0';
+		/* XXX: sometimes this doesn't work... why? */
+	if (system(command) == -1)
+		errx(1, "system %s", command);
 } /* postfilter_log */
 
 
