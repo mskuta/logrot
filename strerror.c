@@ -1,7 +1,7 @@
-/*	$Id: err.c,v 1.5 1998/03/22 11:01:56 lukem Exp $	*/
+/*	$Id$	*/
 
 /*
- * Copyright 1997, 1998 Luke Mewburn <lukem@netbsd.org>.
+ * Copyright 1998 Luke Mewburn <lukem@netbsd.org>.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,75 +31,16 @@
  */
 
 #if !defined(lint)
-static char rcsid[] = "$Id: err.c,v 1.5 1998/03/22 11:01:56 lukem Exp $";
+static char rcsid[] = "$Id$";
 #endif /* !lint */
 
 #include "logrot.h"
 
-void
-err(int eval, const char *fmt, ...)
+char *
+strerror(int err)
 {
-	va_list		ap;
-        int		sverrno;
+	if (err < 1 || err > sys_nerr)
+		return NULL;
 
-	sverrno = errno;
-        (void)fprintf(stderr, "%s: ", progname);
-        if (fmt != NULL) {
-		va_start(ap, fmt);
-                (void)vfprintf(stderr, fmt, ap);
-                (void)fprintf(stderr, ": ");
-		va_end(ap);
-        }
-        (void)fprintf(stderr, "%s\n", strerror(sverrno));
-        exit(eval);
-}
-
-void
-errx(int eval, const char *fmt, ...)
-{
-	va_list		ap;
-        int		sverrno;
-
-	sverrno = errno;
-        (void)fprintf(stderr, "%s: ", progname);
-        if (fmt != NULL) {
-		va_start(ap, fmt);
-                (void)vfprintf(stderr, fmt, ap);
-		va_end(ap);
-        }
-        (void)fprintf(stderr, "\n");
-        exit(eval);
-}
-
-void
-warn(const char *fmt, ...)
-{
-	va_list		ap;
-        int		sverrno;
-
-	sverrno = errno;
-        (void)fprintf(stderr, "%s: ", progname);
-        if (fmt != NULL) {
-		va_start(ap, fmt);
-                (void)vfprintf(stderr, fmt, ap);
-                (void)fprintf(stderr, ": ");
-		va_end(ap);
-        }
-        (void)fprintf(stderr, "%s\n", strerror(sverrno));
-}
-
-void
-warnx(const char *fmt, ...)
-{
-	va_list		ap;
-        int		sverrno;
-
-	sverrno = errno;
-        (void)fprintf(stderr, "%s: ", progname);
-        if (fmt != NULL) {
-		va_start(ap, fmt);
-                (void)vfprintf(stderr, fmt, ap);
-		va_end(ap);
-        }
-        (void)fprintf(stderr, "\n");
+	return (sys_errlist[err]);
 }

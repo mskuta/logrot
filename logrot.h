@@ -1,7 +1,8 @@
-/*	$Id: logrot.h,v 1.7 1998/03/22 11:02:00 lukem Exp $	*/
+/*	$Id: logrot.h,v 1.8 1998/03/22 11:26:30 lukem Exp $	*/
 
 /*
- * Copyright 1997, 1998 Luke Mewburn <lukem@netbsd.org>.  All rights reserved.
+ * Copyright 1997, 1998 Luke Mewburn <lukem@netbsd.org>.
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -55,10 +56,13 @@
 #endif
 #if defined(HAVE_STRING_H)
 #include <string.h>
-#else
-#if defined(HAVE_STRINGS_H)
+#elif defined(HAVE_STRINGS_H)
 #include <strings.h>
 #endif
+#ifdef HAVE_STRINGLIST_H
+#include <stringlist.h>
+#else
+#include "stringlist.h"
 #endif
 #if defined(HAVE_UNISTD_H)
 #include <unistd.h>
@@ -137,26 +141,11 @@
 
 char	*progname;		/* name of program (for error messages) */
 
-char   *filter_log(const char *, const char *, const char *, const char *,
-		const char *);
-pid_t	parse_pid(const char *);
-char   *parse_rotate_fmt(const char *, const char *, const char *, time_t);
-int	parse_sig(const char *);
-int	parse_wait(const char *);
-void	process_log(const char *, const char *);
-char   *rotate_log(const char *, pid_t, int, int);
-void	splitpath(const char *, char **, char **);
-char   *xstrdup(const char *);
-
-
 #if !defined(HAVE_MKSTEMP)
 int	mkstemp(char *);
 #endif
 
 #if !defined(HAVE_ERR)
-#if !defined(HAVE_STRERROR)
-#error "strerror() not available; unable to compile err.c"
-#endif
 void	err(int eval, const char *fmt, ...);
 void	errx(int eval, const char *fmt, ...);
 void	warn(const char *fmt, ...);

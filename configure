@@ -1043,7 +1043,7 @@ EOF
 
 fi
 
-for ac_hdr in fcntl.h stdarg.h stdlib.h string.h strings.h unistd.h
+for ac_hdr in fcntl.h stdarg.h stdlib.h string.h stringlist.h strings.h unistd.h
 do
 ac_safe=`echo "$ac_hdr" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for $ac_hdr""... $ac_c" 1>&6
@@ -1502,7 +1502,7 @@ fi
 
 fi
 
-for ac_func in strerror sysconf waitpid
+for ac_func in sysconf waitpid
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
 echo "configure:1509: checking for $ac_func" >&5
@@ -1557,7 +1557,7 @@ else
 fi
 done
 
-for ac_func in err mkstemp
+for ac_func in err mkstemp strerror
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
 echo "configure:1564: checking for $ac_func" >&5

@@ -1,7 +1,8 @@
-dnl	$Id: configure.in,v 1.2 1998/03/22 11:26:27 lukem Exp $
+dnl	$Id: configure.in,v 1.3 1998/03/22 11:32:56 lukem Exp $
 
 dnl
-dnl Copyright 1998 Luke Mewburn <lukem@netbsd.org>.  All rights reserved.
+dnl Copyright 1998 Luke Mewburn <lukem@netbsd.org>.
+dnl All rights reserved.
 dnl
 dnl Redistribution and use in source and binary forms, with or without
 dnl modification, are permitted provided that the following conditions
@@ -39,7 +40,7 @@ AC_PATH_PROG(GZIP, gzip)
 AC_HEADER_STDC
 AC_HEADER_TIME
 AC_HEADER_SYS_WAIT
-AC_CHECK_HEADERS(fcntl.h stdarg.h stdlib.h string.h strings.h unistd.h)
+AC_CHECK_HEADERS(fcntl.h stdarg.h stdlib.h string.h stringlist.h strings.h unistd.h)
 
 AC_C_CONST
 AC_TYPE_PID_T
@@ -49,8 +50,8 @@ AC_STRUCT_TM
 AC_TYPE_SIGNAL
 AC_FUNC_STRFTIME
 AC_FUNC_VPRINTF
-AC_CHECK_FUNCS(strerror sysconf waitpid)
-AC_REPLACE_FUNCS(err mkstemp)
+AC_CHECK_FUNCS(sysconf waitpid)
+AC_REPLACE_FUNCS(err mkstemp strerror)
 
 PIDFILE="/var/run/syslog.pid"
 AC_MSG_CHECKING(locating syslogd's pid file)

@@ -1,7 +1,8 @@
-#	$Id: Makefile.in,v 1.1 1998/03/22 11:01:50 lukem Exp $
+#	$Id: Makefile.in,v 1.2 1998/03/22 11:32:54 lukem Exp $
 
 #
-# Copyright 1998 Luke Mewburn <lukem@netbsd.org>.  All rights reserved.
+# Copyright 1998 Luke Mewburn <lukem@netbsd.org>.
+# All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -43,7 +44,7 @@ INSTALL_DATA = @INSTALL_DATA@
 GZIP = @GZIP@
 PIDFILE = @PIDFILE@
 
-CFLAGS = @CFLAGS@
+CFLAGS = @CFLAGS@ -Wall
 DEFS = -DGZIP=\"${GZIP}\" -DPIDFILE=\"${PIDFILE}\"
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
@@ -67,13 +68,13 @@ SHELL = /bin/sh
 .c.o:
 	${CC} -I${srcdir} ${CPPFLAGS} ${CFLAGS} ${DEFS} -c $<
 
-OBJ = logrot.o @LIBOBJS@
+OBJ = logrot.o stringlist.o @LIBOBJS@
 
 all: logrot logrot.1
 
 distall: ${srcdir}/configure ${srcdir}/config.h
 
-logrot: ${OBJ} @LIBOBJS@
+logrot: ${OBJ}
 	${CC} ${LDFLAGS} -o logrot ${OBJ} ${LIBS}
 
 logrot.1:	logrot.1.in Makefile

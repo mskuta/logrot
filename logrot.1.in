@@ -1,6 +1,7 @@
-.\"	$Id: logrot.1.in,v 1.8 1998/03/22 11:32:57 lukem Exp $
+.\"	$Id: logrot.1.in,v 1.9 1998/03/22 11:33:26 lukem Exp $
 .\"
-.\" Copyright 1997, 1998 Luke Mewburn <lukem@netbsd.org>.  All rights reserved.
+.\" Copyright 1997, 1998 Luke Mewburn <lukem@netbsd.org>.
+.\" All rights reserved.
 .\"
 .\" Redistribution and use in source and binary forms, with or without
 .\" modification, are permitted provided that the following conditions
@@ -30,7 +31,7 @@
 .\" logrot --
 .\"	rotate log files, with optional filtering and compression
 .\"
-.TH LOGROT 1 "March 22 1998"
+.TH LOGROT 1 "June 18 1998"
 .SH NAME
 logrot \- rotate log files
 .SH SYNOPSIS
@@ -46,6 +47,8 @@ logrot \- rotate log files
 .IR "\ filter" ]
 .RB [ \-F\c
 .IR "\ postprocessor" ]
+.RB [ \-N\c
+.IR "\ notify_command" ]
 .RB [ \-p\c
 .IR "\ pidfile" ]
 .RB [ \-r\c
@@ -57,6 +60,8 @@ logrot \- rotate log files
 .RB [ \-X\c
 .IR "\ compressext" ]
 .I "file"
+.RI [ "file"
+.IR "\&.\&.\&." ]
 .SH DESCRIPTION
 .I logrot
 rotates the log file
@@ -82,7 +87,10 @@ A signal
 .I sig
 can be sent to a process id stored in
 .IR "pidfile" ,
-and a time delay of
+or
+.I notify_command
+can be run to perform any other form of notification.
+After that, a time delay of
 .I wait
 seconds will occur before any filtering is performed - giving
 the logging process time to re-open the new logfile on receipt
@@ -161,6 +169,14 @@ Accepts the same
 escape sequences as
 .BR \-B .
 .TP
+.BI \-N " notify_command"
+Execute 
+.I notify_command
+instead of sending a signal.
+This option overrides any preceeding
+.B \-s
+option.
+.TP
 .BI \-p " pidfile"
 Contains the pid of the process to signal with
 .BI \-s " sig"
@@ -175,7 +191,8 @@ If no signal is to be sent, use
 .TP
 .BI \-r " rotatefmt"
 Format of rotated filename, which is relative to 
-.BI \-d " destdir" .
+.B \-d\c
+.IR "\ destdir" .
 Escape characters a la
 .IR "printf" (3)
 are available; refer to
@@ -185,9 +202,9 @@ Defaults to \`%f.%y%m%d\'.
 .TP
 .BI \-s " sig"
 The signal to send to the process defined in
-.BI \-p " pidfile"
+.I pidfile
 before waiting for 
-.BI \-w " wait"
+.I wait
 seconds to expire.
 May be one of
 .IR "HUP" ,
@@ -203,11 +220,17 @@ If
 .I sig
 is \`0\', then don't send a signal to
 .IR "pidfile" .
+This option overrides any preceeding
+.B \-N
+option.
 .TP
 .BI \-w " wait"
 Seconds to wait after sending the 
-.BI \-s " sig"
-signal before performing any further processing.
+.I sig
+signal
+or running
+.I notify_command
+before performing any further processing.
 .TP
 .BI \-X " compressext"
 Extension to append to
@@ -215,10 +238,9 @@ Extension to append to
 if compression occurred.
 Defaults to \`.gz\'.
 .SS ROTATE FORMAT ESCAPE SEQUENCES
-The
 .I rotatefmt
-specified in 
-.BI \-r " rotatefmt"
+(as given by
+.IR rotatefmt )
 can have escape sequences with
 .B "%"
 a la

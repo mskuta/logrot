@@ -1,7 +1,6 @@
-/*	$Id: mkstemp.c,v 1.2 1997/04/02 06:28:29 lukem Exp $	*/
+/*	$Id: mkstemp.c,v 1.3 1998/03/22 11:02:02 lukem Exp $	*/
 
 /*	$NetBSD: mktemp.c,v 1.5 1995/02/02 02:10:09 jtc Exp $	*/
-
 /*
  * Copyright (c) 1987, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -36,7 +35,7 @@
  */
 
 #if !defined(lint)
-static char rcsid[] = "$Id: mkstemp.c,v 1.2 1997/04/02 06:28:29 lukem Exp $";
+static char rcsid[] = "$Id: mkstemp.c,v 1.3 1998/03/22 11:02:02 lukem Exp $";
 #endif /* !lint */
 
 #if defined(LIBC_SCCS) && !defined(lint)
