@@ -1,4 +1,4 @@
-.\"	$Id: logrot.1.in,v 1.9 1998/03/22 11:33:26 lukem Exp $
+.\"	$Id: logrot.1.in,v 1.10 1998/06/17 14:20:12 lukem Exp $
 .\"
 .\" Copyright 1997, 1998 Luke Mewburn <lukem@netbsd.org>.
 .\" All rights reserved.
@@ -311,3 +311,8 @@ Contains the pid of the process to signal after rotation.
 .IR "syslogd" (8)
 .SH AUTHOR
 Luke Mewburn, <lukem@netbsd.org>
+.SH HISTORY
+This manual page documents
+.I logrot
+version 1.2, released on
+June 18, 1998.
