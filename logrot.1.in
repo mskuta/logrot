@@ -1,4 +1,4 @@
-.\"	$Id: logrot.man,v 1.4 1997/04/01 06:06:59 lukem Exp $
+.\"	$Id: logrot.man,v 1.6 1997/11/20 05:45:09 lukem Exp $
 .\"
 .\" Copyright 1997 Luke Mewburn <lukem@netbsd.org>.  All rights reserved.
 .\"
@@ -30,7 +30,7 @@
 .\" logrot --
 .\"	rotate log files, with optional filtering and compression
 .\"
-.TH LOGROT 1 "February 27 1997"
+.TH LOGROT 1 "November 20 1997"
 .SH NAME
 logrot \- rotate log files
 .SH SYNOPSIS
@@ -63,8 +63,8 @@ rotates the log file
 .IR "file" ,
 creating a new log file with the same permissions
 as the original.
-If necessary, the rotated file can be optionally pre-processed with
-.IR "preprocessor" ,
+If necessary, the rotated file may be pre-processed with
+.I "preprocessor" 
 filtered via
 .IR "filter" ,
 compressed with
@@ -180,6 +180,7 @@ Escape characters a la
 are available; refer to
 .B "ROTATE FORMAT ESCAPE SEQUENCES"
 below for more information.
+Defaults to \`%f.%y%m%d\'.
 .TP
 .BI \-s " sig"
 The signal to send to the process defined in
