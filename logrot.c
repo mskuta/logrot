@@ -1,5 +1,5 @@
 /*
- * $Id: logrot.c,v 1.4 1997/02/18 03:43:29 lukem Exp $
+ * $Id: logrot.c,v 1.5 1997/02/22 05:42:41 lukem Exp $
  */
 
 /*
@@ -250,12 +250,12 @@ filter_log(const char *origlog, const char *rotlog, const char *filter_prog,
 	}
 
 	if (filter_pid != -1 || compress_pid != -1) {
-		while (filter_pid != -1 && compress_pid != -1) {
+		while (filter_pid != -1 || compress_pid != -1) {
 			if (filter_pid != -1)
-				if (waitpid(filter_pid, NULL, WNOHANG) != -1)
+				if (waitpid(filter_pid, NULL, WNOHANG) != 0)
 					filter_pid = -1;
 			if (compress_pid != -1)
-				if (waitpid(compress_pid, NULL, WNOHANG) != -1)
+				if (waitpid(compress_pid, NULL, WNOHANG) != 0)
 					compress_pid = -1;
 			sleep(1);
 		}
@@ -263,9 +263,9 @@ filter_log(const char *origlog, const char *rotlog, const char *filter_prog,
 		char	xferbuf[BUFSIZ], *tmp;
 		size_t	in, out;
 
-		while ((in = read(infd, xferbuf, sizeof(xferbuf))) >= 0) {
+		while ((in = read(infd, xferbuf, sizeof(xferbuf))) > 0) {
 			tmp = xferbuf;
-			while ((out = write(outfd, tmp, in)) >= 0) {
+			while ((out = write(outfd, tmp, in)) > 0) {
 				tmp += out;
 				in -= out;
 			}
@@ -383,7 +383,8 @@ parse_rotate_fmt(const char *fmt, const char *dir, const char *log, time_t now)
 			while (*junk1 && to <= bufend)
 				*to++ = *junk1++;
 			if (*junk1)
-				errx(1, "format '%s' is too long", fmt);
+				errx(1, "%%%c in format '%s' is too long",
+				    *from, fmt);
 			break;
 		case 'y':
 		case 'Y':
@@ -489,11 +490,13 @@ void
 postfilter_log(const char *log, const char *prog)
 {
 	const char	*from;
+	char		*logdir, *logbase;
 	char		*command, *to;
-	size_t		 cmdlen, loglen;
+	size_t		 cmdlen;
+	int		 pid;
 
 	cmdlen = 0;
-	loglen = strlen(log);
+	splitpath(log, &logdir, &logbase);
 
 	for (from = prog; *from; from++) {
 		if (*from != '%') {
@@ -503,17 +506,21 @@ postfilter_log(const char *log, const char *prog)
 		from++;
 		switch (*from) {
 		case '\0':
-			warnx("%% format requires a specifier");
-			return;
+			errx(1, "%% format requires a specifier");
 		case '%':
 			cmdlen++;
 			break;
+		case 'd':
+			cmdlen += strlen(logdir);
+			break;
 		case 'f':
-			cmdlen += loglen;
+			cmdlen += strlen(logbase);
+			break;
+		case 'p':
+			cmdlen += strlen(log);
 			break;
 		default:
-			warnx("%%%c not supported in postfilter_log", *from);
-			return;
+			errx(1, "%%%c not supported in postfilter_log", *from);
 		}
 	}
 	command = (char *) malloc((cmdlen + 1) * sizeof(char *));
@@ -533,18 +540,38 @@ postfilter_log(const char *log, const char *prog)
 		case '%':
 			*to++ = *from;
 			break;
-		case 'f':
+		case 'd':
+			(void) strcat(to, logdir);
+			to += strlen(logdir);
+			break;
+		case 'b':
+			(void) strcat(to, logbase);
+			to += strlen(logbase);
+			break;
+		case 'p':
 			(void) strcat(to, log);
-			to += loglen;
+			to += strlen(log);
 			break;
 		default:
 			errx(1, "%%%c unexpected in postfilter_log", *from);
 		}
 	}
 	*to++ = '\0';
-		/* XXX: sometimes this doesn't work... why? */
-	if (system(command) == -1)
-		errx(1, "system %s", command);
+
+	switch (pid = fork()) {
+	case -1:
+		err(1, "can't fork");
+	case 0:
+		for (pid = 3 ; pid < getdtablesize(); pid++)
+			close(pid);
+		execl(PATH_BSHELL, "sh", "-c", command, NULL);
+		err(1, "can't exec sh to run %s", command);
+	default:
+		if (waitpid(pid, NULL, 0) == -1)
+			errx(1, "error running %s", command);
+	}
+	free(logdir);
+	free(logbase);
 } /* postfilter_log */
 
 
