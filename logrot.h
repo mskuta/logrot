@@ -1,5 +1,5 @@
 /*
- * $Id: logrot.h,v 1.4 1997/02/22 17:09:13 lukem Exp $
+ * $Id: logrot.h,v 1.5 1997/02/23 23:23:49 lukem Exp $
  */
 
 /*
@@ -40,6 +40,9 @@
 #ifndef DEFAULT_FORMAT
 #define DEFAULT_FORMAT	"%f.%y%m%d"
 #endif
+#ifndef DEFAULT_PIDFILE
+#define DEFAULT_PIDFILE	"/etc/syslog.pid"
+#endif
 #ifndef DEFAULT_SIGNAL
 #define DEFAULT_SIGNAL	1
 #endif
@@ -62,7 +65,7 @@ pid_t	parse_pid(const char *);
 char   *parse_rotate_fmt(const char *, const char *, const char *, time_t);
 int	parse_sig(const char *);
 int	parse_wait(const char *);
-void	postfilter_log(const char *, const char *);
+void	process_log(const char *, const char *);
 char   *rotate_log(const char *, pid_t, int, int);
 void	splitpath(const char *, char **, char **);
 char   *xstrdup(const char *);

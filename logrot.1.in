@@ -1,4 +1,4 @@
-.\"	$Id$
+.\"	$Id: logrot.man,v 1.1 1997/02/27 11:44:25 lukem Exp $
 .\"
 .\" Copyright 1997 Luke Mewburn <lukem@netbsd.org>.  All rights reserved.
 .\"
@@ -35,6 +35,8 @@
 logrot \- rotate log files
 .SH SYNOPSIS
 .B logrot
+.RB [ \-B\c
+.IR "\ preprocessor" ]
 .RB [ \-c ]
 .RB [ \-C\c
 .IR "\ compressor" ]
@@ -43,7 +45,7 @@ logrot \- rotate log files
 .RB [ \-f\c
 .IR "\ filter" ]
 .RB [ \-F\c
-.IR "\ postfilter" ]
+.IR "\ postprocessor" ]
 .RB [ \-p\c
 .IR "\ pidfile" ]
 .RB [ \-r\c
@@ -60,12 +62,14 @@ logrot \- rotate log files
 rotates the log file
 .I file, creating a new log file with the same permissions
 as the original.
-If necessary, the rotated file can be optionally filtered via
+If necessary, the rotated file can be optionally pre-processed with
+.IR "preprocessor" ,
+filtered via
 .IR "filter" ,
 compressed with
 .IR "compressor" ,
 and post-processed with
-.IR "postfilter" .
+.IR "postprocessor" .
 .PP
 .I logrot
 attempts to rotate the file as atomically as possible, in that the
@@ -93,6 +97,31 @@ accepts the following options (in the following list,
 .I rotfile
 is the name of the rotated file):
 .TP 8
+.BI \-B " preprocessor"
+Preprocess
+.I rotfile
+with
+.I "preprocessor"
+before the filtering and compression occurs, but after rotation.
+The
+.B "%"
+character allows for escape sequences, a la
+.IR "printf" (3).
+The following escape sequences are supported:
+.B "%%"
+\`%%\' - a \`%\' sign.
+\`%d\' \-
+.IR "dirname" (1)
+of
+.IR "rotfile" .
+\`%f\' \-
+.IR "basename" (1)
+of
+.IR "rotfile" .
+\`%p\' \-
+full pathname of
+.IR "rotfile" .
+.TP
 .B \-c
 Compress data before storing in
 .I rotfile.
@@ -120,29 +149,15 @@ through
 before optional compression and output to
 .IR "rotfile" .
 .TP
-.BI \-F " postfilter"
+.BI \-F " postprocessor"
 Postprocess
 .I rotfile
 with
-.IR "postfilter" .
-The
+.IR "postprocessor" .
+Accepts the same
 .B "%"
-character allows for escape sequences, a la
-.IR "printf" (3).
-The following escape sequences are supported:
-.B "%%"
-\`%%\' - a \`%\' sign.
-\`%d\' \-
-.IR "dirname" (1)
-of
-.IR "rotfile" .
-\`%f\' \-
-.IR "basename" (1)
-of
-.IR "rotfile" .
-\`%p\' \-
-full pathname of
-.IR "rotfile" .
+escape sequences as
+.BR \-B .
 .TP
 .BI \-p " pidfile"
 Contains the pid of the process to signal with
@@ -151,6 +166,9 @@ when the rotation has occurred.
 The first word on the first line of
 .I pidfile
 is assumed to be the pid.
+Defaults to \`/etc/syslog.pid\'.
+If no signal is to be sent, use
+.BR \-s " 0".
 .TP
 .BI \-r " rotatefmt"
 Format of rotated filename, which is relative to 
@@ -167,6 +185,20 @@ The signal to send to the process defined in
 after
 .BI \-w " wait"
 seconds have expired.
+May be one of
+.IR "HUP" ,
+.IR "INT" ,
+.IR "QUIT" ,
+.IR "TERM" ,
+.IR "USR1" ,
+or
+.IR "USR2" .
+Defaults to
+.IR "HUP" .
+If
+.I sig
+is \`0\', then don't send a signal to
+.IR "pidfile" .
 .TP
 .BI \-w " wait"
 Seconds to wait before sending the 
@@ -230,10 +262,17 @@ filtering completed successfully, then a temporary file of the
 form \`\fIfile\fR.logrot.XXXXXX\' (where \`XXXXXX\' is replaced
 with a random number) will remain in the filesystem.
 This is not removed to allow manual rotation to occur.
+.SH FILES
+.PD 0
+.TP 20
+.B /etc/syslog.pid
+Contains the pid of the process to signal after rotation.
+.PD
 .SH SEE ALSO
 .IR "basename" (1),
 .IR "dirname" (1),
 .IR "gzip" (1),
+.IR "signal" (3),
 .IR "strftime" (3),
 .IR "syslogd" (8)
 .SH AUTHOR

@@ -1,5 +1,5 @@
 /*
- * $Id: logrot.c,v 1.8 1997/02/23 23:23:49 lukem Exp $
+ * $Id: logrot.c,v 1.9 1997/02/27 11:44:25 lukem Exp $
  */
 
 /*
@@ -57,9 +57,10 @@ void
 usage()
 {
 	fprintf(stderr,
-		"Usage: %s\t[-c] [-C compressor] [-d destdir] [-f filter]\n"
-		"\t\t[-F postfilter] [-p pidfile] [-r rotatefmt] [-s sig]\n"
-		"\t\t[-w wait] [-X compress_extension] file\n", progname);
+"Usage: %s\t[-c] [-C compressor] [-d destdir] [-f filter] [-B preprocessor]\n"
+"\t\t[-F postprocessor] [-p pidfile] [-r rotate_format] [-s sig]\n"
+"\t\t[-w wait] [-X compress_extension] file\n",
+	    progname);
 	exit(1);
 } /* usage */
 
@@ -78,7 +79,8 @@ main(int argc, char *argv[])
 	char	*filter_prog;		/* in-line filter program */
 	char	*log;			/* log file to rotate */
 	char	*pidfile;		/* pidfile containing pid to signal */
-	char	*postfilter_prog;	/* post compression filter program */
+	char	*preprocess_prog;	/* pre compression filter program */
+	char	*postprocess_prog;	/* post compression filter program */
 	char	*rotate_fmt;		/* format of rotated logfile name */
 
 	pid_t	 pid;			/* pid to signal */
@@ -99,15 +101,19 @@ main(int argc, char *argv[])
 	compress_ext =		COMPRESS_EXT;
 	destdir =		NULL;
 	filter_prog =		NULL;
-	pidfile =		NULL;
-	postfilter_prog =	NULL;
+	pidfile =		DEFAULT_PIDFILE;
+	postprocess_prog =	NULL;
+	preprocess_prog =	NULL;
 	rotate_fmt =		DEFAULT_FORMAT;
 	pid =			0;
 	sig =			DEFAULT_SIGNAL;
 	wait =			DEFAULT_WAIT;
 
-	while ((ch = getopt(argc, argv, "cC:d:f:F:p:r:s:w:X:")) != -1) {
+	while ((ch = getopt(argc, argv, "B:cC:d:f:F:p:r:s:w:X:")) != -1) {
 		switch(ch) {
+		case 'B':
+			preprocess_prog = optarg;
+			break;
 		case 'c':
 			compress++;
 			break;
@@ -121,7 +127,7 @@ main(int argc, char *argv[])
 			filter_prog = optarg;
 			break;
 		case 'F':
-			postfilter_prog = optarg;
+			postprocess_prog = optarg;
 			break;
 		case 'p':
 			pidfile = optarg;
@@ -148,16 +154,18 @@ main(int argc, char *argv[])
 		usage();
 	log = argv[argc - 1];
 
-	if (pidfile)
+	if (pidfile && pidfile[0] && sig)
 		pid = parse_pid(pidfile);
 
 	(void) time(&now);
 	rotlog = parse_rotate_fmt(rotate_fmt, destdir, log, now);
 	origlog = rotate_log(log, pid, sig, wait);
+	if (preprocess_prog && preprocess_prog[0])
+		process_log(origlog, preprocess_prog);
 	finallog = filter_log(origlog, rotlog, filter_prog,
 				compress ? compress_prog : NULL, compress_ext);
-	if (postfilter_prog)
-		postfilter_log(finallog, postfilter_prog);
+	if (postprocess_prog && postprocess_prog[0])
+		process_log(finallog, postprocess_prog);
 
 	free(finallog);
 	free(origlog);
@@ -465,7 +473,7 @@ parse_sig(const char *signame)
 		{ SIGTERM,	"TERM",	},
 		{ SIGUSR1,	"USR1",	},
 		{ SIGUSR2,	"USR2",	},
-		{ 0,		NULL,	},
+		{ -1,		NULL,	},
 	};
 
 	int	sig;
@@ -489,7 +497,7 @@ parse_sig(const char *signame)
 		}
 		sig = sigs[i].num;
 	}
-	if (sig < 1 || sig >= NSIG)
+	if (sig < 0 || sig >= NSIG)
 		errx(1, "signal %s out of range", signame);
 	return (sig);
 } /* parse_sig */
@@ -518,11 +526,11 @@ parse_wait(const char *waittime)
 
 
 /*
- * postfilter_log --
- *	Perform any postfiltering upon the log.
+ * process_log --
+ *	Perform any processing upon the log.
  */
 void
-postfilter_log(const char *log, const char *prog)
+process_log(const char *log, const char *prog)
 {
 	const char	*from;
 	char		*logdir, *logbase;
@@ -607,7 +615,7 @@ postfilter_log(const char *log, const char *prog)
 	}
 	free(logdir);
 	free(logbase);
-} /* postfilter_log */
+} /* process_log */
 
 
 /*
