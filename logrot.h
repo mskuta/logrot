@@ -1,5 +1,5 @@
 /*
- * $Id: logrot.h,v 1.2 1997/02/17 13:36:47 lukem Exp $
+ * $Id: logrot.h,v 1.3 1997/02/22 05:42:41 lukem Exp $
  */
 
 /*
@@ -50,6 +50,9 @@
 #define PATH_BSHELL	"/bin/sh"
 #endif
 
+#ifndef MAXFD
+#define MAXFD sysconf(_SC_OPEN_MAX)
+#endif
 
 char	*progname;		/* name of program (for error messages) */
 
@@ -67,7 +70,6 @@ char   *xstrdup(const char *);
 
 void	err(int eval, const char *fmt, ...);
 void	errx(int eval, const char *fmt, ...);
-int	getdtablesize(void);
 int	mkstemp(char *);
 void	warn(const char *fmt, ...);
 void	warnx(const char *fmt, ...);

@@ -1,5 +1,5 @@
 /*
- * $Id: logrot.c,v 1.5 1997/02/22 05:42:41 lukem Exp $
+ * $Id: logrot.c,v 1.6 1997/02/22 16:27:41 lukem Exp $
  */
 
 /*
@@ -219,7 +219,7 @@ filter_log(const char *origlog, const char *rotlog, const char *filter_prog,
 			if (dup2(ispipe ? pipefd[0] : outfd,
 			    fileno(stdout)) == -1)
 				err(1, "can't dup2 filter stdout");
-			for (junkfd = 3 ; junkfd < getdtablesize(); junkfd++)
+			for (junkfd = 3 ; junkfd < MAXFD; junkfd++)
 				close(junkfd);
 			execl(PATH_BSHELL, "sh", "-c", filter_prog, NULL);
 			err(1, "can't exec sh to run %s", filter_prog);
@@ -239,7 +239,7 @@ filter_log(const char *origlog, const char *rotlog, const char *filter_prog,
 				err(1, "can't dup2 compress stdin");
 			if (dup2(outfd, fileno(stdout)) == -1)
 				err(1, "can't dup2 compress stdout");
-			for (junkfd = 3 ; junkfd < getdtablesize(); junkfd++)
+			for (junkfd = 3 ; junkfd < MAXFD; junkfd++)
 				close(junkfd);
 			execl(PATH_BSHELL, "sh", "-c", compress_prog, NULL);
 			err(1, "can't exec sh to run %s", compress_prog);
@@ -562,7 +562,7 @@ postfilter_log(const char *log, const char *prog)
 	case -1:
 		err(1, "can't fork");
 	case 0:
-		for (pid = 3 ; pid < getdtablesize(); pid++)
+		for (pid = 3 ; pid < MAXFD; pid++)
 			close(pid);
 		execl(PATH_BSHELL, "sh", "-c", command, NULL);
 		err(1, "can't exec sh to run %s", command);
