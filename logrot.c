@@ -1,4 +1,4 @@
-/*	$Id: logrot.c,v 1.13 1998/03/22 11:26:28 lukem Exp $	*/
+/*	$Id: logrot.c,v 1.14 1998/06/17 14:20:13 lukem Exp $	*/
 
 /*
  * Copyright 1997, 1998 Luke Mewburn <lukem@netbsd.org>.
@@ -31,7 +31,7 @@
  */
 
 #if !defined(lint)
-static char rcsid[] = "$Id: logrot.c,v 1.13 1998/03/22 11:26:28 lukem Exp $";
+static char rcsid[] = "$Id: logrot.c,v 1.14 1998/06/17 14:20:13 lukem Exp $";
 #endif /* !lint */
 
 #include "logrot.h"
@@ -55,9 +55,9 @@ void		 usage(void);
 
 
 /*
- * failure exit value (ev):
- *	1..63		some other error for argv[ev] occurred, no temp file.
- *	65..127		temp file exists for argv[ev]
+ * failure exit value:
+ *	1 = temp file exists
+ *	2 = no temp file
  */
 int ecode;
 
@@ -105,7 +105,7 @@ main(int argc, char *argv[])
 
 	(void) umask(077);		/* be safe when creating temp files */
 
-	ecode = 1;			/* exit val for no temp file */
+	ecode = 2;			/* exit val for no temp file */
 
 	splitpath(argv[0], &p, &progname);
 	free(p);
@@ -180,9 +180,7 @@ main(int argc, char *argv[])
 
 	(void) time(&now);
 	rotlogs = parse_rotate_fmt(rotate_fmt, destdir, argc, argv, now);
-printf("rotlogs\n");for(sig = 0; sig < rotlogs->sl_cur; sig++) printf(" %3d  %s\n", sig, rotlogs->sl_str[sig]);
 	origlogs = rotate_logs(argc, argv, pid, sig, notify_command, wait);
-printf("origlogs\n");for(sig = 0; sig < origlogs->sl_cur; sig++) printf(" %3d  %s\n", sig, origlogs->sl_str[sig]);
 	if (preprocess_prog && preprocess_prog[0]) {
 		for (idx = 0; idx < origlogs->sl_cur; idx++)
 			process_log(origlogs->sl_str[idx], preprocess_prog);
@@ -193,7 +191,6 @@ printf("origlogs\n");for(sig = 0; sig < origlogs->sl_cur; sig++) printf(" %3d  %
 		    filter_prog, compress ? compress_prog : NULL, compress_ext);
 		sl_add(finallogs, p);
 	}
-printf("finallogs\n");for(sig = 0; sig < finallogs->sl_cur; sig++) printf(" %3d  %s\n", sig, finallogs->sl_str[sig]);
 	if (postprocess_prog && postprocess_prog[0]) {
 		for (idx = 0; idx < finallogs->sl_cur; idx++)
 			process_log(finallogs->sl_str[idx], postprocess_prog);
