@@ -1,7 +1,7 @@
-/*	$Id: logrot.c,v 1.18 1998/08/08 01:47:32 lukem Exp $	*/
+/*	$Id: logrot.c,v 1.19 1999/07/27 15:36:41 lukem Exp $	*/
 
 /*
- * Copyright 1997-1999 Luke Mewburn <lukem@netbsd.org>.
+ * Copyright 1997-2001 Luke Mewburn <lukem@netbsd.org>.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,7 +31,7 @@
  */
 
 #if !defined(lint)
-static char rcsid[] = "$Id: logrot.c,v 1.18 1998/08/08 01:47:32 lukem Exp $";
+static char rcsid[] = "$Id: logrot.c,v 1.19 1999/07/27 15:36:41 lukem Exp $";
 #endif /* !lint */
 
 #include "logrot.h"
@@ -67,7 +67,7 @@ int ecode;
  *	Display a usage message and exit
  */
 void
-usage()
+usage(void)
 {
 	fprintf(stderr,
 "Usage: %s\t[-c] [-C compressor] [-d destdir] [-f filter] [-B preprocessor]\n"
@@ -255,7 +255,7 @@ filter_log(const char *origlog, const char *rotlog, const char *filter_prog,
 		case 0:
 			if (dup2(infd, fileno(stdin)) == -1)
 				err(ecode, "can't dup2 filter stdin");
-			if (dup2(ispipe ? pipefd[0] : outfd,
+			if (dup2(ispipe ? pipefd[1] : outfd,
 			    fileno(stdout)) == -1)
 				err(ecode, "can't dup2 filter stdout");
 			for (junkfd = 3 ; junkfd < MAXFD; junkfd++)
@@ -264,7 +264,7 @@ filter_log(const char *origlog, const char *rotlog, const char *filter_prog,
 			err(ecode, "can't exec sh to run '%s'", filter_prog);
 		default:
 			if (ispipe)
-				close(pipefd[0]);
+				close(pipefd[1]);
 		}
 	}
 
@@ -273,7 +273,7 @@ filter_log(const char *origlog, const char *rotlog, const char *filter_prog,
 		case -1:
 			err(ecode, "can't fork");
 		case 0:
-			if (dup2(ispipe ? pipefd[1] : infd,
+			if (dup2(ispipe ? pipefd[0] : infd,
 			    fileno(stdin)) == -1)
 				err(ecode, "can't dup2 compress stdin");
 			if (dup2(outfd, fileno(stdout)) == -1)
@@ -284,7 +284,7 @@ filter_log(const char *origlog, const char *rotlog, const char *filter_prog,
 			err(ecode, "can't exec sh to run '%s'", compress_prog);
 		default:
 			if (ispipe)
-				close(pipefd[1]);
+				close(pipefd[0]);
 		}
 	}
 
@@ -638,7 +638,7 @@ process_log(const char *log, const char *prog)
 			(void) strcat(to, logdir);
 			to += strlen(logdir);
 			break;
-		case 'b':
+		case 'f':
 			(void) strcat(to, logbase);
 			to += strlen(logbase);
 			break;
