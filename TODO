@@ -1,0 +1,7 @@
+				logrot todo
+Document ref:	$Id$
+
+* add "-S command" as a command to send the signal (and the wait will
+  occur after this)
+* provide maintenance scripts to cull old rotated logfiles (it's
+  better as a separate tool that's called as a postprocessor)
