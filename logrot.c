@@ -1,9 +1,7 @@
-/*
- * $Id: logrot.c,v 1.10 1997/03/18 06:45:06 lukem Exp $
- */
+/*	$Id: logrot.c,v 1.11 1997/04/02 06:28:29 lukem Exp $	*/
 
 /*
- * Copyright 1997 Luke Mewburn <lukem@netbsd.org>.  All rights reserved.
+ * Copyright 1997, 1998 Luke Mewburn <lukem@netbsd.org>.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,23 +30,8 @@
  */
 
 #if !defined(lint)
-static char rcsid[] = "$Id$";
+static char rcsid[] = "$Id: logrot.c,v 1.11 1997/04/02 06:28:29 lukem Exp $";
 #endif /* !lint */
-
-#include <sys/types.h>
-#include <sys/param.h>
-#include <sys/stat.h>
-#include <sys/wait.h>
-
-#include <ctype.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <signal.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-#include <unistd.h>
 
 #include "logrot.h"
 
@@ -546,7 +529,8 @@ parse_wait(const char *waittime)
  */
 void
 process_log(const char *log, const char *prog)
-{ /* XXX: check retvals here */
+{
+    /* XXX: check retvals here */
 	const char	*from;
 	char		*logdir, *logbase;
 	char		*command, *to;
@@ -759,7 +743,7 @@ abort_rotate_log:
 void
 splitpath(const char *path, char **dir, char **base)
 {
-	char *o;
+	char	*o;
 
 	o = strrchr(path, '/');
 	if (o == NULL) {
@@ -786,13 +770,16 @@ splitpath(const char *path, char **dir, char **base)
 char *
 xstrdup(const char *str)
 {
-	char *newstr;
+	char	*newstr;
+	size_t	 len;
 
 	if (str == NULL)
 		return NULL;
 
-	newstr = strdup(str);
+	len = strlen(str) + 1;
+	newstr = malloc(len);
 	if (newstr == NULL)
 		errx(ecode, "can't allocate memory");
+	memcpy(newstr, str, len);
 	return (newstr);
 } /* xstrdup */

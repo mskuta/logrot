@@ -1,6 +1,4 @@
-/*
- * $Id: mktemp.c,v 1.1.1.1 1997/02/17 11:23:37 lukem Exp $
- */
+/*	$Id: mkstemp.c,v 1.2 1997/04/02 06:28:29 lukem Exp $	*/
 
 /*	$NetBSD: mktemp.c,v 1.5 1995/02/02 02:10:09 jtc Exp $	*/
 
@@ -38,7 +36,7 @@
  */
 
 #if !defined(lint)
-static char rcsid[] = "$Id$";
+static char rcsid[] = "$Id: mkstemp.c,v 1.2 1997/04/02 06:28:29 lukem Exp $";
 #endif /* !lint */
 
 #if defined(LIBC_SCCS) && !defined(lint)
@@ -48,13 +46,7 @@ static char sccsid[] = "@(#)mktemp.c	8.1 (Berkeley) 6/4/93";
 static char rcsid[] = "$NetBSD: mktemp.c,v 1.5 1995/02/02 02:10:09 jtc Exp $";
 #endif /* LIBC_SCCS and not lint */
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <stdio.h>
-#include <ctype.h>
-#include <unistd.h>
+#include "logrot.h"
 
 static int _gettemp();
 
@@ -67,20 +59,22 @@ mkstemp(path)
 	return (_gettemp(path, &fd) ? fd : -1);
 }
 
+#if 0
 char *
 mktemp(path)
 	char *path;
 {
 	return(_gettemp(path, (int *)NULL) ? path : (char *)NULL);
 }
+#endif
 
 static int
 _gettemp(path, doopen)
 	char *path;
-	register int *doopen;
+	int *doopen;
 {
 	extern int errno;
-	register char *start, *trv;
+	char *start, *trv;
 	struct stat sbuf;
 	u_int pid;
 

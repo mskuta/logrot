@@ -1,9 +1,7 @@
-/*
- * $Id: logrot.h,v 1.5 1997/02/23 23:23:49 lukem Exp $
- */
+/*	$Id: logrot.h,v 1.6 1997/03/18 06:45:06 lukem Exp $	*/
 
 /*
- * Copyright 1997 Luke Mewburn <lukem@netbsd.org>.  All rights reserved.
+ * Copyright 1997, 1998 Luke Mewburn <lukem@netbsd.org>.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,24 +29,83 @@
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef _LOGROT_H
+#define _LOGROT_H
+
+#include "config.h"
+
+#include <sys/types.h>
+#include <sys/param.h>
+#include <sys/stat.h>
+#include <sys/wait.h>
+
+#include <ctype.h>
+#include <errno.h>
+#ifdef HAVE_FCNTL_H
+#include <fcntl.h>
+#endif
+#include <signal.h>
+#if defined __STDC__ || defined HAVE_STDARG_H
+#include <stdarg.h>
+#else
+#include <varargs.h>
+#endif
+#include <stdio.h>
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+#ifdef HAVE_STRING_H
+#include <string.h>
+#else
+#ifdef HAVE_STRINGS_H
+#include <strings.h>
+#endif
+#endif
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
+#ifdef TIME_WITH_SYS_TIME
+# include <sys/time.h>
+# include <time.h>
+#else
+# ifdef HAVE_SYS_TIME_H
+#  include <sys/time.h>
+# else
+#  include <time.h>
+# endif
+#endif
+
+
+#if defined(GZIP)
 #ifndef COMPRESS_PROG
-#define COMPRESS_PROG	"/opt/local/bin/gzip"
+#define COMPRESS_PROG	GZIP
 #endif
 #ifndef COMPRESS_EXT
 #define COMPRESS_EXT	".gz"
 #endif
+#endif
+
+#ifndef COMPRESS_PROG
+#error "gzip not available; please supply COMPRESS_PROG and COMPRESS_EXT"
+#endif
+
+#ifndef DEFAULT_PIDFILE
+#define DEFAULT_PIDFILE	PIDFILE
+#endif
+
 #ifndef DEFAULT_FORMAT
 #define DEFAULT_FORMAT	"%f.%y%m%d"
 #endif
-#ifndef DEFAULT_PIDFILE
-#define DEFAULT_PIDFILE	"/etc/syslog.pid"
-#endif
+
 #ifndef DEFAULT_SIGNAL
-#define DEFAULT_SIGNAL	1
+#define DEFAULT_SIGNAL	SIGHUP
 #endif
+
 #ifndef DEFAULT_WAIT
 #define DEFAULT_WAIT	5
 #endif
+
 #ifndef PATH_BSHELL
 #define PATH_BSHELL	"/bin/sh"
 #endif
@@ -71,8 +128,14 @@ void	splitpath(const char *, char **, char **);
 char   *xstrdup(const char *);
 
 
+#ifndef HAVE_MKSTEMP
+int	mkstemp(char *);
+#endif
+#ifndef HAVE_ERR
 void	err(int eval, const char *fmt, ...);
 void	errx(int eval, const char *fmt, ...);
-int	mkstemp(char *);
 void	warn(const char *fmt, ...);
 void	warnx(const char *fmt, ...);
+#endif
+
+#endif /* _LOGROT_H */

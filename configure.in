@@ -1,0 +1,64 @@
+dnl	$Id$
+
+dnl
+dnl Copyright 1998 Luke Mewburn <lukem@netbsd.org>.  All rights reserved.
+dnl
+dnl Redistribution and use in source and binary forms, with or without
+dnl modification, are permitted provided that the following conditions
+dnl are met:
+dnl 1. Redistributions of source code must retain the above copyright
+dnl    notice, this list of conditions and the following disclaimer.
+dnl 2. Redistributions in binary form must reproduce the above copyright
+dnl    notice, this list of conditions and the following disclaimer in the
+dnl    documentation and/or other materials provided with the distribution.
+dnl 3. All advertising materials mentioning features or use of this software
+dnl    must display the following acknowledgement:
+dnl 	This product includes software developed by Luke Mewburn.
+dnl 4. The name of the author may not be used to endorse or promote products
+dnl    derived from this software without specific prior written permission.
+dnl
+dnl THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+dnl IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+dnl OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+dnl IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+dnl INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+dnl BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
+dnl OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+dnl ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
+dnl TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+dnl USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+dnl
+
+AC_INIT(logrot.c)
+AC_CONFIG_HEADER(config.h)
+
+AC_PROG_CC
+AC_PROG_INSTALL
+AC_PATH_PROG(GZIP, gzip)
+
+AC_HEADER_STDC
+AC_HEADER_TIME
+AC_HEADER_SYS_WAIT
+AC_CHECK_HEADERS(fcntl.h stdarg.h stdlib.h string.h strings.h unistd.h)
+
+AC_C_CONST
+AC_TYPE_PID_T
+AC_TYPE_SIZE_T
+AC_STRUCT_TM
+
+AC_TYPE_SIGNAL
+AC_FUNC_STRFTIME
+AC_FUNC_VPRINTF
+AC_CHECK_FUNCS(strerror)
+AC_REPLACE_FUNCS(err mkstemp)
+
+PIDFILE="/var/run/syslog.pid"
+AC_MSG_CHECKING(locating syslogd\'s pid file)
+if test \! -f $PIDFILE; then
+	PIDFILE="/etc/syslog.pid"
+fi
+AC_MSG_RESULT($PIDFILE)
+AC_SUBST(PIDFILE)
+
+
+AC_OUTPUT(Makefile)

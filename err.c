@@ -1,9 +1,7 @@
-/*
- * $Id: err.c,v 1.3 1997/02/18 01:00:23 lukem Exp $
- */
+/*	$Id: err.c,v 1.4 1997/04/02 06:28:29 lukem Exp $	*/
 
 /*
- * Copyright 1997 Luke Mewburn <lukem@netbsd.org>.  All rights reserved.
+ * Copyright 1997, 1998 Luke Mewburn <lukem@netbsd.org>.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,15 +30,8 @@
  */
 
 #if !defined(lint)
-static char rcsid[] = "$Id$";
+static char rcsid[] = "$Id: err.c,v 1.4 1997/04/02 06:28:29 lukem Exp $";
 #endif /* !lint */
-
-#include <sys/types.h>
-
-#include <errno.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <string.h>
 
 #include "logrot.h"
 

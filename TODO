@@ -1,10 +1,9 @@
-				logrot todo
-				-----------
+			logrot todo
+			-----------
 
-Document ref:	$Id: TODO,v 1.1 1997/04/16 07:56:53 lukem Exp $
+Document ref:	$Id: TODO,v 1.2 1998/02/26 01:36:55 lukem Exp $
 
 * add "-S command" as a command to send the signal (and the wait will
   occur after this)
 * provide maintenance scripts to cull old rotated logfiles (it's
   better as a separate tool that's called as a postprocessor)
-* support autoconf
