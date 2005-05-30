@@ -1,4 +1,4 @@
-dnl	$Id: configure.in,v 1.7 1999/07/27 15:36:37 lukem Exp $
+dnl	$Id: configure.in,v 1.8 2005/05/30 01:55:41 lukem Exp $
 
 dnl
 dnl Copyright 1998, 1999, 2005 Luke Mewburn <luke@mewburn.net>.
@@ -30,6 +30,11 @@ dnl
 AC_INIT(logrot.c)
 AC_CONFIG_HEADER(config.h)
 
+AC_ARG_WITH(pidfile, [\
+  --with-pidfile=pidfile  Path to syslogd's pidfile [auto-detected]],
+    [:],
+    [:])
+
 AC_PROG_CC
 AC_PROG_INSTALL
 AC_PATH_PROG(GZIP, gzip)
@@ -38,7 +43,8 @@ AC_HEADER_STAT
 AC_HEADER_STDC
 AC_HEADER_TIME
 AC_HEADER_SYS_WAIT
-AC_CHECK_HEADERS(fcntl.h stdarg.h stdlib.h string.h stringlist.h strings.h unistd.h)
+AC_CHECK_HEADERS([fcntl.h stdarg.h stdlib.h string.h stringlist.h \
+		strings.h unistd.h])
 
 AC_C_CONST
 AC_TYPE_PID_T
@@ -48,17 +54,22 @@ AC_STRUCT_TM
 AC_TYPE_SIGNAL
 AC_FUNC_STRFTIME
 AC_FUNC_VPRINTF
-AC_CHECK_FUNCS(sysconf waitpid)
-AC_REPLACE_FUNCS(err mkstemp strerror)
+AC_CHECK_FUNCS([sysconf waitpid])
+AC_REPLACE_FUNCS([err mkstemp strerror])
 
-AC_MSG_CHECKING(location of syslogd's pid file)
-pidfiles="/var/run/syslog.pid /var/run/syslogd.pid /etc/syslog.pid"
-for PIDFILE in ${pidfiles}; do
-	if test -f $PIDFILE; then
-		break
-	fi
-done
-AC_MSG_RESULT($PIDFILE)
+AC_MSG_CHECKING([location of syslogd's pid file])
+if test "${with_pidfile:+set}" = set; then
+	PIDFILE="$with_pidfile"
+	AC_MSG_RESULT([(provided) $PIDFILE])
+else
+	pidfiles="/var/run/syslog.pid /var/run/syslogd.pid /etc/syslog.pid"
+	for PIDFILE in ${pidfiles}; do
+		if test -f $PIDFILE; then
+			break
+		fi
+	done
+	AC_MSG_RESULT([$PIDFILE])
+fi
 AC_SUBST(PIDFILE)
 
 
