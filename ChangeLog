@@ -1,3 +1,22 @@
+$Id$
+
+Mon May 30 03:40:49 UTC 2005	lukem
+
+	* Release logrot 1.7.
+
+	* Prevent NetBSD RCSID from expanding in mkstemp.c and stringlist.[ch].
+
+	* configure.in: Support --with-pidfile=pidfile to allow the user
+	  to override the syslogd pidfile.
+
+	* configure.in: Improve m4 quoting in macro invocation.
+
+	* Remove clause 3 (advertising clause) from my license.
+	  Update my email address.
+	  Crank copyright year.
+
+	* mkstemp.c: Convert UCB license to 3 clause.
+
 Sun Jul  8 04:08:15 UTC 2001	lukem
 
 	* Add missing comma in first paragraph of man page
