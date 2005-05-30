@@ -1,6 +1,6 @@
-/*	$Id: mkstemp.c,v 1.4 1998/06/17 14:20:16 lukem Exp $	*/
-
+/*	$Id: mkstemp.c,v 1.5 2005/05/30 01:52:20 lukem Exp $	*/
 /*	from NetBSD: mktemp.c,v 1.5 1995/02/02 02:10:09 jtc Exp	*/
+
 /*
  * Copyright (c) 1987, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -31,14 +31,14 @@
  */
 
 #if !defined(lint)
-static char rcsid[] = "$Id: mkstemp.c,v 1.4 1998/06/17 14:20:16 lukem Exp $";
+static char rcsid[] = "$Id: mkstemp.c,v 1.5 2005/05/30 01:52:20 lukem Exp $";
 #endif /* !lint */
 
 #if defined(LIBC_SCCS) && !defined(lint)
 #if 0
 static char sccsid[] = "@(#)mktemp.c	8.1 (Berkeley) 6/4/93";
 #endif
-static char rcsid[] = "$NetBSD: mktemp.c,v 1.5 1995/02/02 02:10:09 jtc Exp $";
+static char rcsid[] = "NetBSD: mktemp.c,v 1.5 1995/02/02 02:10:09 jtc Exp";
 #endif /* LIBC_SCCS and not lint */
 
 #include "logrot.h"
