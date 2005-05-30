@@ -1,6 +1,6 @@
-.\"	$Id: logrot.1.in,v 1.14 1999/07/27 15:36:40 lukem Exp $
+.\"	$Id: logrot.1.in,v 1.15 2001/07/08 03:59:37 lukem Exp $
 .\"
-.\" Copyright 1997-2001 Luke Mewburn <lukem@netbsd.org>.
+.\" Copyright 1997-2001, 2005 Luke Mewburn <luke@mewburn.net>.
 .\" All rights reserved.
 .\"
 .\" Redistribution and use in source and binary forms, with or without
@@ -11,10 +11,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\" 	This product includes software developed by Luke Mewburn.
-.\" 4. The name of the author may not be used to endorse or promote products
+.\" 3. The name of the author may not be used to endorse or promote products
 .\"    derived from this software without specific prior written permission.
 .\"
 .\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
@@ -312,7 +309,7 @@ Contains the pid of the process to signal after rotation.
 .IR "strftime" (3),
 .IR "syslogd" (8)
 .SH AUTHOR
-Luke Mewburn, <lukem@netbsd.org>
+Luke Mewburn, <luke@mewburn.net>
 .SH HISTORY
 This manual page documents
 .I logrot

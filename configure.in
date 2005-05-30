@@ -1,7 +1,7 @@
-dnl	$Id: configure.in,v 1.6 1998/08/08 01:47:30 lukem Exp $
+dnl	$Id: configure.in,v 1.7 1999/07/27 15:36:37 lukem Exp $
 
 dnl
-dnl Copyright 1998, 1999 Luke Mewburn <lukem@netbsd.org>.
+dnl Copyright 1998, 1999, 2005 Luke Mewburn <luke@mewburn.net>.
 dnl All rights reserved.
 dnl
 dnl Redistribution and use in source and binary forms, with or without
@@ -12,10 +12,7 @@ dnl    notice, this list of conditions and the following disclaimer.
 dnl 2. Redistributions in binary form must reproduce the above copyright
 dnl    notice, this list of conditions and the following disclaimer in the
 dnl    documentation and/or other materials provided with the distribution.
-dnl 3. All advertising materials mentioning features or use of this software
-dnl    must display the following acknowledgement:
-dnl 	This product includes software developed by Luke Mewburn.
-dnl 4. The name of the author may not be used to endorse or promote products
+dnl 3. The name of the author may not be used to endorse or promote products
 dnl    derived from this software without specific prior written permission.
 dnl
 dnl THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR

@@ -1,7 +1,7 @@
 			logrot README
 			-------------
 
-Document ref:	$Id: README,v 1.4 1999/07/27 15:36:34 lukem Exp $
+Document ref:	$Id: README,v 1.5 2001/07/08 04:00:22 lukem Exp $
 Release:	logrot 1.6
 Date:		July 8, 2001.
 
@@ -15,4 +15,4 @@ for example).
 
 The manual page provides details on the various incantation options.
 
-Luke Mewburn. <lukem@netbsd.org>
+Luke Mewburn <luke@mewburn.net>

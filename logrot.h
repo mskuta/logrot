@@ -1,7 +1,7 @@
-/*	$Id: logrot.h,v 1.10 1998/06/22 03:36:04 lukem Exp $	*/
+/*	$Id: logrot.h,v 1.11 1999/07/27 15:36:43 lukem Exp $	*/
 
 /*
- * Copyright 1997-1999 Luke Mewburn <lukem@netbsd.org>.
+ * Copyright 1997-1999, 2005 Luke Mewburn <luke@mewburn.net>.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -12,10 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- * 	This product includes software developed by Luke Mewburn.
- * 4. The name of the author may not be used to endorse or promote products
+ * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
