@@ -1,4 +1,4 @@
-.\"	$Id: logrot.1.in,v 1.15 2001/07/08 03:59:37 lukem Exp $
+.\"	$Id: logrot.1.in,v 1.16 2005/05/30 01:55:42 lukem Exp $
 .\"
 .\" Copyright 1997-2001, 2005 Luke Mewburn <luke@mewburn.net>.
 .\" All rights reserved.
@@ -28,7 +28,7 @@
 .\" logrot --
 .\"	rotate log files, with optional filtering and compression
 .\"
-.TH LOGROT 1 "July 28 1999"
+.TH LOGROT 1 "May 30 2005"
 .SH NAME
 logrot \- rotate log files
 .SH SYNOPSIS
@@ -313,5 +313,6 @@ Luke Mewburn, <luke@mewburn.net>
 .SH HISTORY
 This manual page documents
 .I logrot
-version 1.6, released on
-July 8, 2001.
+version 1.7,
+released on
+May 30, 2005.

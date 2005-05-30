@@ -1,9 +1,9 @@
 			logrot README
 			-------------
 
-Document ref:	$Id: README,v 1.5 2001/07/08 04:00:22 lukem Exp $
-Release:	logrot 1.6
-Date:		July 8, 2001.
+Document ref:	$Id: README,v 1.6 2005/05/30 01:55:41 lukem Exp $
+Release:	logrot 1.7
+Date:		May 30, 2005.
 
 logrot is log rotation program with many options that should cater
 for most people's needs.
