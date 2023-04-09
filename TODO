@@ -1,8 +1,6 @@
 			logrot todo
 			-----------
 
-Document ref:	$Id: TODO,v 1.5 1998/08/08 01:47:27 lukem Exp $
-
 * provide maintenance scripts to cull old rotated logfiles (it's
   better as a separate tool that's called as a postprocessor)
 

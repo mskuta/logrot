@@ -1,4 +1,3 @@
-/*	$Id: stringlist.c,v 1.2 1998/06/17 14:29:38 lukem Exp $	*/
 /*	from NetBSD: stringlist.c,v 1.2 1997/01/17 07:26:20 lukem Exp	*/
 
 /*
@@ -35,10 +34,6 @@
 #include "logrot.h"
 
 #ifndef HAVE_STRINGLIST_H
-
-#if !defined(lint)
-static char rcsid[] = "$Id: stringlist.c,v 1.2 1998/06/17 14:29:38 lukem Exp $";
-#endif /* !lint */
 
 #define _SL_CHUNKSIZE	20
 

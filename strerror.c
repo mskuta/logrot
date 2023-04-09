@@ -1,5 +1,3 @@
-/*	$Id: strerror.c,v 1.2 1999/07/27 15:36:44 lukem Exp $	*/
-
 /*
  * Copyright 1998, 1999, 2005 Luke Mewburn <luke@mewburn.net>.
  * All rights reserved.
@@ -26,10 +24,6 @@
  * TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-#if !defined(lint)
-static char rcsid[] = "$Id: strerror.c,v 1.2 1999/07/27 15:36:44 lukem Exp $";
-#endif /* !lint */
 
 #include "logrot.h"
 

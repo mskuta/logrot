@@ -1,5 +1,3 @@
-/*	$Id: logrot.h,v 1.11 1999/07/27 15:36:43 lukem Exp $	*/
-
 /*
  * Copyright 1997-1999, 2005 Luke Mewburn <luke@mewburn.net>.
  * All rights reserved.

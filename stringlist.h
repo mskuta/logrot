@@ -1,4 +1,3 @@
-/*	$Id: stringlist.h,v 1.1 1998/06/17 14:20:19 lukem Exp $	*/
 /*	from NetBSD: stringlist.h,v 1.2 1997/01/17 06:11:36 lukem Exp	*/
 
 /*
