@@ -1,8 +1,4 @@
-			logrot README
-			-------------
-
-Release:	logrot 1.7
-Date:		May 30, 2005.
+# Description
 
 logrot is log rotation program with many options that should cater
 for most people's needs.
@@ -14,4 +10,12 @@ for example).
 
 The manual page provides details on the various incantation options.
 
-Luke Mewburn <luke@mewburn.net>
+
+# Installation
+
+```
+meson setup --buildtype=release --prefix="$HOME/.local" build
+meson install -Cbuild
+```
+
+

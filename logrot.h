@@ -28,8 +28,6 @@
 #if !defined(_LOGROT_H)
 #define _LOGROT_H
 
-#include "config.h"
-
 #include <sys/types.h>
 #include <sys/param.h>
 #include <sys/stat.h>
@@ -41,6 +39,9 @@
 #endif
 
 #include <ctype.h>
+#if defined(HAVE_ERR_H)
+#include <err.h>
+#endif
 #include <errno.h>
 #if defined(HAVE_FCNTL_H)
 #include <fcntl.h>
@@ -90,15 +91,6 @@
 #endif
 #endif
 
-#if !defined(HAVE_WAITPID)
-#error "waitpid() not available; unable to proceed"
-#endif
-
-#if !defined(HAVE_STRFTIME)
-#error "strftime() not available; unable to proceed"
-#endif
-
-
 #if defined(GZIP)
 #if !defined(COMPRESS_PROG)
 #define COMPRESS_PROG	GZIP
@@ -134,13 +126,14 @@
 
 #if defined(HAVE_SYSCONF)
 #define MAXFD	sysconf(_SC_OPEN_MAX)
-#elif defined(OPEN_MAX)
-#define MAXFD	OPEN_MAX
 #else
-#error "don't know how to determine maximum number of open files"
+#define MAXFD	OPEN_MAX
 #endif
 
 char	*progname;		/* name of program (for error messages) */
+#if !defined(HAVE_STRERROR)
+char	*strerror(int);
+#endif
 
 #if !defined(HAVE_MKSTEMP)
 int	mkstemp(char *);
