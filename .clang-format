@@ -1,0 +1,15 @@
+---
+BasedOnStyle:                         Mozilla
+
+AlwaysBreakAfterDefinitionReturnType: None
+AlwaysBreakAfterReturnType:           None
+BreakBeforeBraces:                    Custom
+ColumnLimit:                          9001
+IndentWidth:                          8
+SpacesBeforeTrailingComments:         2
+TabWidth:                             8
+UseTab:                               ForIndentation
+
+BraceWrapping:
+  BeforeElse: true
+...

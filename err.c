@@ -27,70 +27,62 @@
 
 #include "logrot.h"
 
-void
-err(int eval, const char *fmt, ...)
-{
-	va_list		ap;
-        int		sverrno;
+void err(int eval, const char* fmt, ...) {
+	va_list ap;
+	int sverrno;
 
 	sverrno = errno;
-        (void)fprintf(stderr, "%s: ", progname);
-        if (fmt != NULL) {
+	(void)fprintf(stderr, "%s: ", progname);
+	if (fmt != NULL) {
 		va_start(ap, fmt);
-                (void)vfprintf(stderr, fmt, ap);
-                (void)fprintf(stderr, ": ");
+		(void)vfprintf(stderr, fmt, ap);
+		(void)fprintf(stderr, ": ");
 		va_end(ap);
-        }
-        (void)fprintf(stderr, "%s\n", strerror(sverrno));
-        exit(eval);
+	}
+	(void)fprintf(stderr, "%s\n", strerror(sverrno));
+	exit(eval);
 }
 
-void
-errx(int eval, const char *fmt, ...)
-{
-	va_list		ap;
-        int		sverrno;
+void errx(int eval, const char* fmt, ...) {
+	va_list ap;
+	int sverrno;
 
 	sverrno = errno;
-        (void)fprintf(stderr, "%s: ", progname);
-        if (fmt != NULL) {
+	(void)fprintf(stderr, "%s: ", progname);
+	if (fmt != NULL) {
 		va_start(ap, fmt);
-                (void)vfprintf(stderr, fmt, ap);
+		(void)vfprintf(stderr, fmt, ap);
 		va_end(ap);
-        }
-        (void)fprintf(stderr, "\n");
-        exit(eval);
+	}
+	(void)fprintf(stderr, "\n");
+	exit(eval);
 }
 
-void
-warn(const char *fmt, ...)
-{
-	va_list		ap;
-        int		sverrno;
+void warn(const char* fmt, ...) {
+	va_list ap;
+	int sverrno;
 
 	sverrno = errno;
-        (void)fprintf(stderr, "%s: ", progname);
-        if (fmt != NULL) {
+	(void)fprintf(stderr, "%s: ", progname);
+	if (fmt != NULL) {
 		va_start(ap, fmt);
-                (void)vfprintf(stderr, fmt, ap);
-                (void)fprintf(stderr, ": ");
+		(void)vfprintf(stderr, fmt, ap);
+		(void)fprintf(stderr, ": ");
 		va_end(ap);
-        }
-        (void)fprintf(stderr, "%s\n", strerror(sverrno));
+	}
+	(void)fprintf(stderr, "%s\n", strerror(sverrno));
 }
 
-void
-warnx(const char *fmt, ...)
-{
-	va_list		ap;
-        int		sverrno;
+void warnx(const char* fmt, ...) {
+	va_list ap;
+	int sverrno;
 
 	sverrno = errno;
-        (void)fprintf(stderr, "%s: ", progname);
-        if (fmt != NULL) {
+	(void)fprintf(stderr, "%s: ", progname);
+	if (fmt != NULL) {
 		va_start(ap, fmt);
-                (void)vfprintf(stderr, fmt, ap);
+		(void)vfprintf(stderr, fmt, ap);
 		va_end(ap);
-        }
-        (void)fprintf(stderr, "\n");
+	}
+	(void)fprintf(stderr, "\n");
 }

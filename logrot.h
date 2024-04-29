@@ -28,14 +28,14 @@
 #if !defined(_LOGROT_H)
 #define _LOGROT_H
 
-#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 #ifdef STAT_MACROS_BROKEN
 #undef S_ISREG
 #undef S_ISDIR
-#define	S_ISREG(mode)	(((mode)&S_IFMT) == S_IFREG)
-#define	S_ISDIR(mode)	(((mode)&S_IFMT) == S_IFDIR)
+#define S_ISREG(mode) (((mode)&S_IFMT) == S_IFREG)
+#define S_ISDIR(mode) (((mode)&S_IFMT) == S_IFDIR)
 #endif
 
 #include <ctype.h>
@@ -77,7 +77,7 @@
 #define WEXITSTATUS(stat_val) ((unsigned)(stat_val) >> 8)
 #endif
 #if !defined(WIFEXITED)
-#define WIFEXITED(stat_val) (((stat_val) & 255) == 0)
+#define WIFEXITED(stat_val) (((stat_val)&255) == 0)
 #endif
 
 #if defined(TIME_WITH_SYS_TIME)
@@ -93,10 +93,10 @@
 
 #if defined(GZIP)
 #if !defined(COMPRESS_PROG)
-#define COMPRESS_PROG	GZIP
+#define COMPRESS_PROG GZIP
 #endif
 #if !defined(COMPRESS_EXT)
-#define COMPRESS_EXT	".gz"
+#define COMPRESS_EXT ".gz"
 #endif
 #endif
 
@@ -105,45 +105,45 @@
 #endif
 
 #if !defined(DEFAULT_PIDFILE)
-#define DEFAULT_PIDFILE	PIDFILE
+#define DEFAULT_PIDFILE PIDFILE
 #endif
 
 #if !defined(DEFAULT_FORMAT)
-#define DEFAULT_FORMAT	"%f.%y%m%d"
+#define DEFAULT_FORMAT "%f.%y%m%d"
 #endif
 
 #if !defined(DEFAULT_SIGNAL)
-#define DEFAULT_SIGNAL	SIGHUP
+#define DEFAULT_SIGNAL SIGHUP
 #endif
 
 #if !defined(DEFAULT_WAIT)
-#define DEFAULT_WAIT	5
+#define DEFAULT_WAIT 5
 #endif
 
 #if !defined(PATH_BSHELL)
-#define PATH_BSHELL	"/bin/sh"
+#define PATH_BSHELL "/bin/sh"
 #endif
 
 #if defined(HAVE_SYSCONF)
-#define MAXFD	sysconf(_SC_OPEN_MAX)
+#define MAXFD sysconf(_SC_OPEN_MAX)
 #else
-#define MAXFD	OPEN_MAX
+#define MAXFD OPEN_MAX
 #endif
 
-char	*progname;		/* name of program (for error messages) */
+char* progname; /* name of program (for error messages) */
 #if !defined(HAVE_STRERROR)
-char	*strerror(int);
+char* strerror(int);
 #endif
 
 #if !defined(HAVE_MKSTEMP)
-int	mkstemp(char *);
+int mkstemp(char*);
 #endif
 
 #if !defined(HAVE_ERR)
-void	err(int eval, const char *fmt, ...);
-void	errx(int eval, const char *fmt, ...);
-void	warn(const char *fmt, ...);
-void	warnx(const char *fmt, ...);
+void err(int eval, const char* fmt, ...);
+void errx(int eval, const char* fmt, ...);
+void warn(const char* fmt, ...);
+void warnx(const char* fmt, ...);
 #endif
 
 #endif /* _LOGROT_H */
