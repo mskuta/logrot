@@ -35,52 +35,44 @@
 
 #ifndef HAVE_STRINGLIST_H
 
-#define _SL_CHUNKSIZE	20
+#define _SL_CHUNKSIZE 20
 
 /*
  * sl_init(): Initialize a string list
  */
-StringList *
-sl_init()
-{
-	StringList *sl = malloc(sizeof(StringList));
+StringList* sl_init() {
+	StringList* sl = malloc(sizeof(StringList));
 	if (sl == NULL)
 		err(1, "stringlist");
 
 	sl->sl_cur = 0;
 	sl->sl_max = _SL_CHUNKSIZE;
-	sl->sl_str = malloc(sl->sl_max * sizeof(char *));
+	sl->sl_str = malloc(sl->sl_max * sizeof(char*));
 	if (sl->sl_str == NULL)
 		err(1, "stringlist");
 	return sl;
 }
 
-
 /*
  * sl_add(): Add an item to the string list
  */
-void
-sl_add(sl, name)
-	StringList *sl;
-	char *name;
+void sl_add(sl, name) StringList* sl;
+char* name;
 {
 	if (sl->sl_cur == sl->sl_max - 1) {
 		sl->sl_max += _SL_CHUNKSIZE;
-		sl->sl_str = realloc(sl->sl_str, sl->sl_max * sizeof(char *));
+		sl->sl_str = realloc(sl->sl_str, sl->sl_max * sizeof(char*));
 		if (sl->sl_str == NULL)
 			err(1, "stringlist");
 	}
 	sl->sl_str[sl->sl_cur++] = name;
 }
 
-
 /*
  * sl_free(): Free a stringlist
  */
-void
-sl_free(sl, all)
-	StringList *sl;
-	int all;
+void sl_free(sl, all) StringList* sl;
+int all;
 {
 	size_t i;
 
@@ -95,14 +87,12 @@ sl_free(sl, all)
 	free(sl);
 }
 
-
 /*
  * sl_find(): Find a name in the string list
  */
-char *
-sl_find(sl, name)
-	StringList *sl;
-	char *name;
+char* sl_find(sl, name)
+StringList* sl;
+char* name;
 {
 	size_t i;
 

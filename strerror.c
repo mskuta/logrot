@@ -27,9 +27,7 @@
 
 #include "logrot.h"
 
-char *
-strerror(int err)
-{
+char* strerror(int err) {
 	if (err < 1 || err > sys_nerr)
 		return NULL;
 

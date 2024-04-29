@@ -40,9 +40,8 @@ static char rcsid[] = "NetBSD: mktemp.c,v 1.5 1995/02/02 02:10:09 jtc Exp";
 
 static int _gettemp();
 
-int
-mkstemp(path)
-	char *path;
+int mkstemp(path)
+char* path;
 {
 	int fd;
 
@@ -58,10 +57,9 @@ mktemp(path)
 }
 #endif
 
-static int
-_gettemp(path, doopen)
-	char *path;
-	int *doopen;
+static int _gettemp(path, doopen)
+char* path;
+int* doopen;
 {
 	extern int errno;
 	char *start, *trv;
@@ -69,7 +67,8 @@ _gettemp(path, doopen)
 	u_int pid;
 
 	pid = getpid();
-	for (trv = path; *trv; ++trv);		/* extra X's get set to 0's */
+	for (trv = path; *trv; ++trv)
+		; /* extra X's get set to 0's */
 	while (*--trv == 'X') {
 		*trv = (pid % 10) + '0';
 		pid /= 10;
@@ -85,10 +84,10 @@ _gettemp(path, doopen)
 		if (*trv == '/') {
 			*trv = '\0';
 			if (stat(path, &sbuf))
-				return(0);
+				return (0);
 			if (!S_ISDIR(sbuf.st_mode)) {
 				errno = ENOTDIR;
-				return(0);
+				return (0);
 			}
 			*trv = '/';
 			break;
@@ -97,19 +96,18 @@ _gettemp(path, doopen)
 
 	for (;;) {
 		if (doopen) {
-			if ((*doopen =
-			    open(path, O_CREAT|O_EXCL|O_RDWR, 0600)) >= 0)
-				return(1);
+			if ((*doopen = open(path, O_CREAT | O_EXCL | O_RDWR, 0600)) >= 0)
+				return (1);
 			if (errno != EEXIST)
-				return(0);
+				return (0);
 		}
 		else if (stat(path, &sbuf))
-			return(errno == ENOENT ? 1 : 0);
+			return (errno == ENOENT ? 1 : 0);
 
 		/* tricky little algorithm for backward compatibility */
 		for (trv = start;;) {
 			if (!*trv)
-				return(0);
+				return (0);
 			if (*trv == 'z')
 				*trv++ = 'a';
 			else {
