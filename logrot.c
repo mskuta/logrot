@@ -87,7 +87,7 @@ int main(int argc, char* argv[]) {
 	int wait;               /* waittime after signal until rotate */
 
 	time_t now;
-	int ch, idx;
+	int ch;
 
 	(void)umask(077); /* be safe when creating temp files */
 
@@ -167,15 +167,15 @@ int main(int argc, char* argv[]) {
 	rotlogs = parse_rotate_fmt(rotate_fmt, destdir, argc, argv, now);
 	origlogs = rotate_logs(argc, argv, pid, sig, notify_command, wait);
 	if (preprocess_prog && preprocess_prog[0]) {
-		for (idx = 0; idx < origlogs->sl_cur; idx++)
+		for (size_t idx = 0; idx < origlogs->sl_cur; idx++)
 			process_log(origlogs->sl_str[idx], preprocess_prog);
 	}
 	finallogs = sl_init();
-	for (idx = 0; idx < origlogs->sl_cur; idx++) {
+	for (size_t idx = 0; idx < origlogs->sl_cur; idx++) {
 		sl_add(finallogs, filter_log(origlogs->sl_str[idx], rotlogs->sl_str[idx], filter_prog, compress ? compress_prog : NULL, compress_ext));
 	}
 	if (postprocess_prog && postprocess_prog[0]) {
-		for (idx = 0; idx < finallogs->sl_cur; idx++)
+		for (size_t idx = 0; idx < finallogs->sl_cur; idx++)
 			process_log(finallogs->sl_str[idx], postprocess_prog);
 	}
 
@@ -268,7 +268,7 @@ char* filter_log(const char* origlog, const char* rotlog, const char* filter_pro
 	 */
 	if (filter_pid == -1 && compress_pid == -1) {
 		char xferbuf[BUFSIZ], *tmp;
-		size_t in, out;
+		ssize_t in, out;
 
 		while ((in = read(infd, xferbuf, sizeof(xferbuf))) > 0) {
 			tmp = xferbuf;
@@ -386,12 +386,11 @@ StringList* parse_rotate_fmt(const char* fmt, const char* dir, int logc, char** 
 	char* to;
 	char *junk1, junk2[4];
 	struct tm* tmnow;
-	int idx;
 	StringList* sl;
 
 	tmnow = localtime(&now);
 	sl = sl_init();
-	for (idx = 0; idx < logc; idx++) {
+	for (int idx = 0; idx < logc; idx++) {
 		if ((strlen(logs[idx]) + (dir != NULL ? strlen(dir) : 0) + 3) > sizeof(buf))
 			errx(ecode, "format '%s' is too long", fmt);
 		splitpath(logs[idx], &logdir, &logbase);
@@ -639,7 +638,7 @@ void process_log(const char* log, const char* prog) {
 StringList* rotate_logs(int logc, char** logs, pid_t pid, int sig, const char* notify_command, int wait) {
 	struct stat stbuf;
 	char *logdir, *logbase, *buf;
-	int fd, idx;
+	int fd;
 	StringList* newlogs;  /* temp files for new rotated logs */
 	StringList* origlogs; /* temp files to put back as original */
 	int* rotated;
@@ -649,7 +648,7 @@ StringList* rotate_logs(int logc, char** logs, pid_t pid, int sig, const char* n
 	fd = -1;
 	rotated = NULL;
 
-	for (idx = 0; idx < logc; idx++) {
+	for (int idx = 0; idx < logc; idx++) {
 		splitpath(logs[idx], &logdir, &logbase);
 
 		if (stat(logs[idx], &stbuf) == -1) {
@@ -723,11 +722,11 @@ StringList* rotate_logs(int logc, char** logs, pid_t pid, int sig, const char* n
 	 *  2	everything ok
 	 */
 	rotated = xmalloc(sizeof(int) * logc);
-	for (idx = 0; idx < logc; idx++)
+	for (int idx = 0; idx < logc; idx++)
 		rotated[idx] = 0;
 
 	/* go through and rotate all the logs */
-	for (idx = 0; idx < logc; idx++) {
+	for (int idx = 0; idx < logc; idx++) {
 
 		/* rotate the original log to the temp rotated log */
 		if (rename(logs[idx], origlogs->sl_str[idx]) == -1) {
@@ -768,10 +767,10 @@ StringList* rotate_logs(int logc, char** logs, pid_t pid, int sig, const char* n
 abort_rotate_logs:
 	if (fd != -1)
 		close(fd);
-	for (idx = 0; idx < newlogs->sl_cur; idx++)
+	for (size_t idx = 0; idx < newlogs->sl_cur; idx++)
 		if (rotated == NULL || rotated[idx] < 1)
 			unlink(newlogs->sl_str[idx]);
-	for (idx = 0; idx < origlogs->sl_cur; idx++)
+	for (size_t idx = 0; idx < origlogs->sl_cur; idx++)
 		if (rotated == NULL || rotated[idx] < 2)
 			unlink(origlogs->sl_str[idx]);
 	sl_free(origlogs, 1);
