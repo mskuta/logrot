@@ -130,7 +130,6 @@
 #define MAXFD OPEN_MAX
 #endif
 
-char* progname; /* name of program (for error messages) */
 #if !defined(HAVE_STRERROR)
 char* strerror(int);
 #endif
