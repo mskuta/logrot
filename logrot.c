@@ -49,6 +49,11 @@ void usage(void);
 int ecode;
 
 /*
+ * name of program (for error messages)
+ */
+char* progname;
+
+/*
  * usage --
  *	Display a usage message and exit
  */
@@ -83,14 +88,12 @@ int main(int argc, char* argv[]) {
 
 	time_t now;
 	int ch, idx;
-	char* p;
 
 	(void)umask(077); /* be safe when creating temp files */
 
 	ecode = 2; /* exit val for no temp file */
 
-	splitpath(argv[0], &p, &progname);
-	free(p);
+	splitpath(argv[0], NULL, &progname);
 
 	compress = 0;
 	compress_prog = COMPRESS_PROG;
@@ -169,8 +172,7 @@ int main(int argc, char* argv[]) {
 	}
 	finallogs = sl_init();
 	for (idx = 0; idx < origlogs->sl_cur; idx++) {
-		p = filter_log(origlogs->sl_str[idx], rotlogs->sl_str[idx], filter_prog, compress ? compress_prog : NULL, compress_ext);
-		sl_add(finallogs, p);
+		sl_add(finallogs, filter_log(origlogs->sl_str[idx], rotlogs->sl_str[idx], filter_prog, compress ? compress_prog : NULL, compress_ext));
 	}
 	if (postprocess_prog && postprocess_prog[0]) {
 		for (idx = 0; idx < finallogs->sl_cur; idx++)
@@ -810,20 +812,22 @@ void run_command(const char* command) {
  *	should be released by the caller with free(3).
  */
 void splitpath(const char* path, char** dir, char** base) {
-	char* o;
-
-	o = strrchr(path, '/');
+	const char* const o = strrchr(path, '/');
 	if (o == NULL) {
-		*dir = xstrdup(".");
+		if (dir != NULL)
+			*dir = xstrdup(".");
 		*base = xstrdup(path);
 	}
 	else if (o == path) {
-		*dir = xstrdup("/");
+		if (dir != NULL)
+			*dir = xstrdup("/");
 		*base = xstrdup(path + 1);
 	}
 	else {
-		*dir = xstrdup(path);
-		(*dir)[o - path] = '\0';
+		if (dir != NULL) {
+			*dir = xstrdup(path);
+			(*dir)[o - path] = '\0';
+		}
 		*base = xstrdup(o + 1);
 	}
 } /* splitpath */

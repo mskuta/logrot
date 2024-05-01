@@ -27,6 +27,8 @@
 
 #include "logrot.h"
 
+extern char* progname;
+
 void err(int eval, const char* fmt, ...) {
 	va_list ap;
 	int sverrno;
