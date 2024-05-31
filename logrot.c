@@ -87,7 +87,6 @@ int main(int argc, char* argv[]) {
 	int wait;               /* waittime after signal until rotate */
 
 	time_t now;
-	int ch;
 
 	(void)umask(077); /* be safe when creating temp files */
 
@@ -95,6 +94,7 @@ int main(int argc, char* argv[]) {
 
 	splitpath(argv[0], NULL, &progname);
 
+	// set default values for options
 	compress = 0;
 	compress_prog = COMPRESS_PROG;
 	compress_ext = COMPRESS_EXT;
@@ -109,7 +109,21 @@ int main(int argc, char* argv[]) {
 	sig = DEFAULT_SIGNAL;
 	wait = DEFAULT_WAIT;
 
-	while ((ch = getopt(argc, argv, "B:cC:d:f:F:N:p:r:s:w:X:")) != -1) {
+	// process options from command line
+	int ch;
+	// clang-format off
+	static struct option longopts[] = {
+		{"compress",    no_argument,       NULL, 'c'},
+		{"compresscmd", required_argument, NULL, 'C'},
+		{"compressext", required_argument, NULL, 'X'},
+		{"olddir",      required_argument, NULL, 'd'},
+		{"postrotate",  required_argument, NULL, 'F'},
+		{"prerotate",   required_argument, NULL, 'B'},
+		{NULL,          0,                 NULL, 0  }
+	};
+	// clang-format on
+	int longindex = 0;
+	while ((ch = getopt_long(argc, argv, "B:cC:d:f:F:N:p:r:s:w:X:", longopts, &longindex)) != -1) {
 		switch (ch) {
 			case 'B':
 				preprocess_prog = optarg;
