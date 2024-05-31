@@ -40,7 +40,7 @@
 /*
  * sl_init(): Initialize a string list
  */
-StringList* sl_init() {
+StringList* sl_init(void) {
 	StringList* sl = malloc(sizeof(StringList));
 	if (sl == NULL)
 		err(1, "stringlist");
@@ -56,9 +56,7 @@ StringList* sl_init() {
 /*
  * sl_add(): Add an item to the string list
  */
-void sl_add(sl, name) StringList* sl;
-char* name;
-{
+void sl_add(StringList* sl, char* name) {
 	if (sl->sl_cur == sl->sl_max - 1) {
 		sl->sl_max += _SL_CHUNKSIZE;
 		sl->sl_str = realloc(sl->sl_str, sl->sl_max * sizeof(char*));
@@ -71,9 +69,7 @@ char* name;
 /*
  * sl_free(): Free a stringlist
  */
-void sl_free(sl, all) StringList* sl;
-int all;
-{
+void sl_free(StringList* sl, int all) {
 	size_t i;
 
 	if (sl == NULL)
@@ -90,10 +86,7 @@ int all;
 /*
  * sl_find(): Find a name in the string list
  */
-char* sl_find(sl, name)
-StringList* sl;
-char* name;
-{
+char* sl_find(StringList* sl, char* name) {
 	size_t i;
 
 	for (i = 0; i < sl->sl_cur; i++)

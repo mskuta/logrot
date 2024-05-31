@@ -40,27 +40,19 @@ static char rcsid[] = "NetBSD: mktemp.c,v 1.5 1995/02/02 02:10:09 jtc Exp";
 
 static int _gettemp();
 
-int mkstemp(path)
-char* path;
-{
+int mkstemp(char* path) {
 	int fd;
 
 	return (_gettemp(path, &fd) ? fd : -1);
 }
 
 #if 0
-char *
-mktemp(path)
-	char *path;
-{
+char* mktemp(char* path) {
 	return(_gettemp(path, (int *)NULL) ? path : (char *)NULL);
 }
 #endif
 
-static int _gettemp(path, doopen)
-char* path;
-int* doopen;
-{
+static int _gettemp(char* path, int* doopen) {
 	extern int errno;
 	char *start, *trv;
 	struct stat sbuf;
