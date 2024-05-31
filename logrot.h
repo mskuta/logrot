@@ -46,6 +46,7 @@
 #if defined(HAVE_FCNTL_H)
 #include <fcntl.h>
 #endif
+#include <getopt.h>
 #include <signal.h>
 #if defined(__STDC__) || defined(HAVE_STDARG_H)
 #include <stdarg.h>

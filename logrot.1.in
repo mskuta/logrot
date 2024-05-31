@@ -104,7 +104,7 @@ accepts the following options (in the following list,
 .I rotfile
 is the name of the rotated file):
 .TP 8
-.BI \-B " preprocessor"
+.B \-B, \-\-prerotate \fIpreprocessor\fR
 Preprocess
 .I rotfile
 with
@@ -128,11 +128,11 @@ of
 full pathname of
 .IR "rotfile" .
 .TP
-.B \-c
+.B \-c, \-\-compress
 Compress data before storing in
 .I rotfile.
 .TP
-.BI \-C " compressor"
+.B \-C, \-\-compresscmd \fIcompressor\fR
 Use
 .I compressor
 as the compression program for
@@ -140,7 +140,7 @@ as the compression program for
 Defaults to
 \`!GZIP!\'.
 .TP
-.BI \-d " destdir"
+.B \-d, \-\-olddir \fIdestdir\fR
 Store
 .I rotfile
 in
@@ -149,7 +149,7 @@ Defaults to \`\fIfile\fR.d\'.
 If the directory does not exist, then the current directory
 of the logfile will be used.
 .TP
-.BI \-f " filter"
+.B \-f \fIfilter\fR
 Filter
 .I file
 through
@@ -157,7 +157,7 @@ through
 before optional compression and output to
 .IR "rotfile" .
 .TP
-.BI \-F " postprocessor"
+.B \-F, \-\-postrotate \fIpostprocessor\fR
 Postprocess
 .I rotfile
 with
@@ -167,7 +167,7 @@ Accepts the same
 escape sequences as
 .BR \-B .
 .TP
-.BI \-N " notify_command"
+.B \-N \fInotify_command\fR
 Execute 
 .I notify_command
 instead of sending a signal.
@@ -175,7 +175,7 @@ This option overrides any preceeding
 .B \-s
 option.
 .TP
-.BI \-p " pidfile"
+.B \-p \fIpidfile\fR
 Contains the pid of the process to signal with
 .BI \-s " sig"
 when the rotation has occurred.
@@ -187,7 +187,7 @@ If no signal is to be sent, use
 .B \-s
 0.
 .TP
-.BI \-r " rotatefmt"
+.B \-r \fIrotatefmt\fR
 Format of rotated filename, which is relative to 
 .B \-d\c
 .IR "\ destdir" .
@@ -198,7 +198,7 @@ are available; refer to
 below for more information.
 Defaults to \`%f.%y%m%d\'.
 .TP
-.BI \-s " sig"
+.B \-s \fIsig\fR
 The signal to send to the process defined in
 .I pidfile
 before waiting for 
@@ -222,7 +222,7 @@ This option overrides any preceeding
 .B \-N
 option.
 .TP
-.BI \-w " wait"
+.B \-w \fIwait\fR
 Seconds to wait after sending the 
 .I sig
 signal
@@ -230,7 +230,7 @@ or running
 .I notify_command
 before performing any further processing.
 .TP
-.BI \-X " compressext"
+.B \-X, \-\-compressext \fIcompressext\fR
 Extension to append to
 .I rotfile
 if compression occurred.
@@ -309,9 +309,3 @@ Contains the pid of the process to signal after rotation.
 .IR "syslogd" (8)
 .SH AUTHOR
 Luke Mewburn, <luke@mewburn.net>
-.SH HISTORY
-This manual page documents
-.I logrot
-version 1.7,
-released on
-May 30, 2005.
