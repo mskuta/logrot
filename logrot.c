@@ -413,20 +413,14 @@ StringList* parse_rotate_fmt(const char* fmt, const char* dir, int logc, char** 
 
 		memset(buf, 0, sizeof(buf) - 1);
 		buf[0] = '\0';
-		if (dir == NULL) /* default dir `file.d' */
-			sprintf(buf, "%s/%s.d", logdir, logbase);
-		else if (dir[0] == '/') /* fully qualified dir */
+		if (dir == NULL) /* original dir */
+			sprintf(buf, "%s", logdir);
+		else if (dir[0] == '/') /* absolute dir */
 			sprintf(buf, "%s", dir);
-		else /* specific dir */
+		else /* relative dir */
 			sprintf(buf, "%s/%s", logdir, dir);
-		if (stat(buf, &stbuf) == -1) {
-			if (errno == ENOENT) {
-				warnx("%s doesn't exist - using %s instead", buf, logdir);
-				strcpy(buf, logdir);
-			}
-			else
-				err(ecode, "can't stat %s", buf);
-		}
+		if (stat(buf, &stbuf) == -1)
+			err(ecode, "can't stat %s", buf);
 		to = buf + strlen(buf);
 		if (*to != '/')
 			strcat(to++, "/");

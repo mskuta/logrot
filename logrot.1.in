@@ -145,9 +145,7 @@ Store
 .I rotfile
 in
 .IR "destdir" .
-Defaults to \`\fIfile\fR.d\'.
-If the directory does not exist, then the current directory
-of the logfile will be used.
+Defaults to the current directory of the logfile.
 .TP
 .B \-f \fIfilter\fR
 Filter
