@@ -185,16 +185,10 @@ If no signal is to be sent, use
 .B \-s
 0.
 .TP
-.B \-r \fIrotatefmt\fR
-Format of rotated filename, which is relative to 
-.B \-d\c
-.IR "\ destdir" .
-Escape characters a la
-.IR "printf" (3)
-are available; refer to
-.B "ROTATE FORMAT ESCAPE SEQUENCES"
-below for more information.
-Defaults to \`%f.%y%m%d\'.
+.B \-r, \-\-dateformat \fIrotatefmt\fR
+Define the extension for the rotated file using format specifiers from
+strftime(3). Only %Y %m %d %H %M %S %V and %s are allowed. Defaults
+to \`-%Y%m%d\'.
 .TP
 .B \-s \fIsig\fR
 The signal to send to the process defined in
@@ -233,48 +227,6 @@ Extension to append to
 .I rotfile
 if compression occurred.
 Defaults to \`.gz\'.
-.SS ROTATE FORMAT ESCAPE SEQUENCES
-.I rotatefmt
-(as given by
-.IR rotatefmt )
-can have escape sequences with
-.B "%"
-a la
-.IR "printf" (3).
-All of the date/time escapes are generated with the same named sequence from
-.IR "strftime" (3).
-.PP
-The following escape sequences are available:
-.TP 6
-.B %%
-A \`%\' sign.
-.TP
-.B %f
-The
-.IR "basename" (1)
-of
-.IR "file" .
-.TP
-.B %y
-Current year within century (e.g, 97).
-.TP
-.B %Y
-Current year, including century (e.g, 1997)
-.TP
-.B %m
-Current month, with leading 0 if necessary (e.g., 02)
-.TP
-.B %d
-Current day, with leading 0 if necessary (e.g., 27)
-.TP
-.B %H
-Current hour (24-hour clock), with leading 0 if necessary (e.g., 23)
-.TP
-.B %M
-Current minute, with leading 0 if necessary (e.g., 09)
-.TP
-.B %S
-Current second, with leading 0 if necessary (e.g., 42)
 .SH DIAGNOSITICS
 .I logrot
 will exit with one of the following values:

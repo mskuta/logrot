@@ -116,6 +116,7 @@ int main(int argc, char* argv[]) {
 		{"compress",    no_argument,       NULL, 'c'},
 		{"compresscmd", required_argument, NULL, 'C'},
 		{"compressext", required_argument, NULL, 'X'},
+		{"dateformat",  required_argument, NULL, 'r'},
 		{"olddir",      required_argument, NULL, 'd'},
 		{"postrotate",  required_argument, NULL, 'F'},
 		{"prerotate",   required_argument, NULL, 'B'},
@@ -392,42 +393,35 @@ pid_t parse_pid(const char* pidfile) {
  *	Returns a StringList containing the target filenames.
  */
 StringList* parse_rotate_fmt(const char* fmt, const char* dir, int logc, char** logs, time_t now) {
-	struct stat stbuf;
-	char buf[MAXPATHLEN];
-	char* bufend;
-	char *logdir, *logbase;
-	const char* from;
-	char* to;
-	char *junk1, junk2[4];
-	struct tm* tmnow;
-	StringList* sl;
+	const struct tm* const tmp = localtime(&now);
+	if (tmp == NULL)
+		err(ecode, "localtime() failed");
 
-	tmnow = localtime(&now);
-	sl = sl_init();
+	StringList* const sl = sl_init();
 	for (int idx = 0; idx < logc; idx++) {
-		if ((strlen(logs[idx]) + (dir != NULL ? strlen(dir) : 0) + 3) > sizeof(buf))
-			errx(ecode, "format '%s' is too long", fmt);
+		char* logbase;
+		char* logdir;
 		splitpath(logs[idx], &logdir, &logbase);
 
-		bufend = buf + sizeof(buf) - 1;
-
-		memset(buf, 0, sizeof(buf) - 1);
-		buf[0] = '\0';
+		char buf[MAXPATHLEN];
+		int size;
 		if (dir == NULL) /* original dir */
-			sprintf(buf, "%s", logdir);
+			size = snprintf(buf, sizeof buf, "%s/%s", logdir, logbase);
 		else if (dir[0] == '/') /* absolute dir */
-			sprintf(buf, "%s", dir);
+			size = snprintf(buf, sizeof buf, "%s/%s", dir, logbase);
 		else /* relative dir */
-			sprintf(buf, "%s/%s", logdir, dir);
-		if (stat(buf, &stbuf) == -1)
-			err(ecode, "can't stat %s", buf);
-		to = buf + strlen(buf);
-		if (*to != '/')
-			strcat(to++, "/");
+			size = snprintf(buf, sizeof buf, "%s/%s/%s", logdir, dir, logbase);
+		if (size == -1)
+			errx(ecode, "snprintf() failed while building destination path for: %s", logs[idx]);
+		else if ((size_t)size >= sizeof buf)
+			errx(ecode, "destination path is too long for: %s", logs[idx]);
 
-		for (from = fmt; *from; from++) {
+		const char* const bufend = buf + sizeof buf - 1;
+		char format[3];
+		char* to = buf + strlen(buf);
+		for (const char* from = fmt; *from; from++) {
 			if (to > bufend)
-				errx(ecode, "format '%s' is too long", fmt);
+				errx(ecode, "date extension is too long for: %s", logs[idx]);
 			if (*from != '%') {
 				*to++ = *from;
 				continue;
@@ -439,40 +433,26 @@ StringList* parse_rotate_fmt(const char* fmt, const char* dir, int logc, char** 
 				case '%':
 					*to++ = *from;
 					break;
-				case 'f':
-					junk1 = logbase;
-					while (*junk1 && to <= bufend)
-						*to++ = *junk1++;
-					if (*junk1)
-						errx(ecode, "%%%c in format '%s' is too long", *from, fmt);
-					break;
-				case 'y':
 				case 'Y':
 				case 'm':
 				case 'd':
 				case 'H':
 				case 'M':
 				case 'S':
-					sprintf(junk2, "%%%c", *from);
-					to += strftime(to, bufend - to, junk2, tmnow);
+				case 'V':
+				case 's':
+					sprintf(format, "%%%c", *from);
+					to += strftime(to, bufend - to, format, tmp);
 					break;
 				default:
-					errx(ecode, "%%%c not supported in rotate_fmt", *from);
+					errx(ecode, "%%%c not supported as format specifier", *from);
 			}
 		}
-
-		if (stat(buf, &stbuf) == -1) {
-			if (errno != ENOENT)
-				err(ecode, "can't stat %s", buf);
-		}
-		else
-			errx(ecode, "%s already exists", buf);
 		sl_add(sl, xstrdup(buf));
-
-		free(logdir);
 		free(logbase);
+		free(logdir);
 	}
-	return (sl);
+	return sl;
 } /* parse_rotate_fmt */
 
 /*
