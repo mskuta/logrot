@@ -110,7 +110,7 @@
 #endif
 
 #if !defined(DEFAULT_FORMAT)
-#define DEFAULT_FORMAT "%f.%y%m%d"
+#define DEFAULT_FORMAT "-%Y%m%d"
 #endif
 
 #if !defined(DEFAULT_SIGNAL)
