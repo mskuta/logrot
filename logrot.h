@@ -53,6 +53,7 @@
 #else
 #include <varargs.h>
 #endif
+#include <stdbool.h>
 #include <stdio.h>
 #if defined(HAVE_STDLIB_H)
 #include <stdlib.h>

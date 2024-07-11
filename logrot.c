@@ -30,11 +30,11 @@
 char* filter_log(const char*, const char*, const char*, const char*, const char*);
 int main(int, char*[]);
 pid_t parse_pid(const char*);
-StringList* parse_rotate_fmt(const char*, const char*, int, char**, time_t);
+char* parse_rotate_fmt(const char*, const char*, const char*, time_t);
 int parse_sig(const char*);
 int parse_wait(const char*);
 void process_log(const char*, const char*);
-StringList* rotate_logs(int, char**, pid_t, int, const char*, int);
+char* rotate_log(const char*);
 void run_command(const char*);
 void splitpath(const char*, char**, char**);
 void* xmalloc(size_t size);
@@ -54,6 +54,11 @@ int ecode;
 char* progname;
 
 /*
+ * options setting a flag
+ */
+static int createflag;
+
+/*
  * usage --
  *	Display a usage message and exit
  */
@@ -71,61 +76,45 @@ void usage(void) {
  *	Main entry point
  */
 int main(int argc, char* argv[]) {
-	StringList *rotlogs, *origlogs, *finallogs;
-	int compress;           /* non-zero if compression required */
-	char* compress_prog;    /* compression program to use */
-	char* compress_ext;     /* extension of compressed files */
-	char* destdir;          /* destination of rotated logfile */
-	char* filter_prog;      /* in-line filter program */
-	char* pidfile;          /* pidfile containing pid to signal */
-	char* preprocess_prog;  /* pre compression filter program */
-	char* postprocess_prog; /* post compression filter program */
-	char* rotate_fmt;       /* format of rotated logfile name */
-	char* notify_command;   /* command to run to notify of rotate */
-	pid_t pid;              /* pid to signal */
-	int sig;                /* signal to send to pid */
-	int wait;               /* waittime after signal until rotate */
-
-	time_t now;
-
-	(void)umask(077); /* be safe when creating temp files */
-
-	ecode = 2; /* exit val for no temp file */
-
 	splitpath(argv[0], NULL, &progname);
 
+	// exit val for no temp file
+	ecode = 2;
+
 	// set default values for options
-	compress = 0;
-	compress_prog = COMPRESS_PROG;
-	compress_ext = COMPRESS_EXT;
-	destdir = NULL;
-	filter_prog = NULL;
-	pidfile = DEFAULT_PIDFILE;
-	postprocess_prog = NULL;
-	preprocess_prog = NULL;
-	rotate_fmt = DEFAULT_FORMAT;
-	notify_command = NULL;
-	pid = 0;
-	sig = DEFAULT_SIGNAL;
-	wait = DEFAULT_WAIT;
+	int compress = 0;                     // non-zero if compression required
+	char* compress_ext = COMPRESS_EXT;    // extension of compressed files
+	char* compress_prog = COMPRESS_PROG;  // compression program to use
+	char* destdir = NULL;                 // destination of rotated logfile
+	char* filter_prog = NULL;             // in-line filter program
+	char* notify_command = NULL;          // command to run to notify of rotate
+	char* pidfile = DEFAULT_PIDFILE;      // pidfile containing pid to signal
+	char* postprocess_prog = NULL;        // pre compression filter program
+	char* preprocess_prog = NULL;         // post compression filter program
+	char* rotate_fmt = DEFAULT_FORMAT;    // format of rotated logfile name
+	int sig = DEFAULT_SIGNAL;             // signal to send to pid
+	int wait = DEFAULT_WAIT;              // waittime after signal until rotate
 
 	// process options from command line
 	int ch;
 	// clang-format off
 	static struct option longopts[] = {
-		{"compress",    no_argument,       NULL, 'c'},
-		{"compresscmd", required_argument, NULL, 'C'},
-		{"compressext", required_argument, NULL, 'X'},
-		{"dateformat",  required_argument, NULL, 'r'},
-		{"olddir",      required_argument, NULL, 'd'},
-		{"postrotate",  required_argument, NULL, 'F'},
-		{"prerotate",   required_argument, NULL, 'B'},
-		{NULL,          0,                 NULL, 0  }
+		{"compress",    no_argument,       NULL,        'c'},
+		{"compresscmd", required_argument, NULL,        'C'},
+		{"compressext", required_argument, NULL,        'X'},
+		{"create",      no_argument,       &createflag, 1  },
+		{"dateformat",  required_argument, NULL,        'r'},
+		{"olddir",      required_argument, NULL,        'd'},
+		{"postrotate",  required_argument, NULL,        'F'},
+		{"prerotate",   required_argument, NULL,        'B'},
+		{NULL,          0,                 NULL,        0  }
 	};
 	// clang-format on
 	int longindex = 0;
 	while ((ch = getopt_long(argc, argv, "B:cC:d:f:F:N:p:r:s:w:X:", longopts, &longindex)) != -1) {
 		switch (ch) {
+			case 0:
+				break;
 			case 'B':
 				preprocess_prog = optarg;
 				break;
@@ -167,7 +156,6 @@ int main(int argc, char* argv[]) {
 			case '?':
 			default:
 				usage();
-				/* NOTREACHED */
 		}
 	}
 	argc -= optind;
@@ -175,28 +163,60 @@ int main(int argc, char* argv[]) {
 	if (argc < 1)
 		usage();
 
+	// get PID to signal
+	pid_t pid = 0;
 	if (pidfile && pidfile[0] && sig)
 		pid = parse_pid(pidfile);
 
+	// move the original logs aside
+	time_t now;
+	StringList* const origlogs = sl_init();
+	StringList* const rotlogs = sl_init();
 	(void)time(&now);
-	rotlogs = parse_rotate_fmt(rotate_fmt, destdir, argc, argv, now);
-	origlogs = rotate_logs(argc, argv, pid, sig, notify_command, wait);
-	if (preprocess_prog && preprocess_prog[0]) {
-		for (size_t idx = 0; idx < origlogs->sl_cur; idx++)
-			process_log(origlogs->sl_str[idx], preprocess_prog);
-	}
-	finallogs = sl_init();
-	for (size_t idx = 0; idx < origlogs->sl_cur; idx++) {
-		sl_add(finallogs, filter_log(origlogs->sl_str[idx], rotlogs->sl_str[idx], filter_prog, compress ? compress_prog : NULL, compress_ext));
-	}
-	if (postprocess_prog && postprocess_prog[0]) {
-		for (size_t idx = 0; idx < finallogs->sl_cur; idx++)
-			process_log(finallogs->sl_str[idx], postprocess_prog);
+	for (int idx = 0; idx < argc; idx++) {
+		char* const rotlog = parse_rotate_fmt(argv[idx], destdir, rotate_fmt, now);
+		if (rotlog != NULL) {
+			char* const origlog = rotate_log(argv[idx]);
+			if (origlog != NULL) {
+				sl_add(origlogs, origlog);
+				sl_add(rotlogs, rotlog);
+			}
+			else {
+				free(rotlog);
+			}
+		}
 	}
 
+	// signal the process then wait a bit
+	if (pid != 0) {
+		if (kill(pid, sig) == -1)
+			errx(ecode, "kill() failed sending signal %d to process %d", sig, (int)pid);
+		sleep(wait);
+	}
+	else if (notify_command != NULL) {
+		run_command(notify_command);
+		sleep(wait);
+	}
+
+	// run the preprocessor
+	if (preprocess_prog && preprocess_prog[0])
+		for (size_t idx = 0; idx < origlogs->sl_cur; idx++)
+			process_log(origlogs->sl_str[idx], preprocess_prog);
+
+	// run the filter and compression
+	StringList* const finallogs = sl_init();
+	for (size_t idx = 0; idx < origlogs->sl_cur; idx++)
+		sl_add(finallogs, filter_log(origlogs->sl_str[idx], rotlogs->sl_str[idx], filter_prog, compress ? compress_prog : NULL, compress_ext));
 	sl_free(origlogs, 1);
 	sl_free(rotlogs, 1);
+
+	// run the postprocessor
+	if (postprocess_prog && postprocess_prog[0])
+		for (size_t idx = 0; idx < finallogs->sl_cur; idx++)
+			process_log(finallogs->sl_str[idx], postprocess_prog);
 	sl_free(finallogs, 1);
+
+	// well done
 	exit(0);
 } /* main */
 
@@ -389,70 +409,76 @@ pid_t parse_pid(const char* pidfile) {
 
 /*
  * parse_rotate_fmt --
- *	Parse the rotate format and build the target filenames.
- *	Returns a StringList containing the target filenames.
+ *	Parse the rotate format and build the target filename.
+ *	Returns a pointer to a malloc(3)ed string containing the target
+ *	filename.
  */
-StringList* parse_rotate_fmt(const char* fmt, const char* dir, int logc, char** logs, time_t now) {
+char* parse_rotate_fmt(const char* logpath, const char* dir, const char* fmt, time_t now) {
 	const struct tm* const tmp = localtime(&now);
-	if (tmp == NULL)
-		err(ecode, "localtime() failed");
-
-	StringList* const sl = sl_init();
-	for (int idx = 0; idx < logc; idx++) {
-		char* logbase;
-		char* logdir;
-		splitpath(logs[idx], &logdir, &logbase);
-
-		char buf[MAXPATHLEN];
-		int size;
-		if (dir == NULL) /* original dir */
-			size = snprintf(buf, sizeof buf, "%s/%s", logdir, logbase);
-		else if (dir[0] == '/') /* absolute dir */
-			size = snprintf(buf, sizeof buf, "%s/%s", dir, logbase);
-		else /* relative dir */
-			size = snprintf(buf, sizeof buf, "%s/%s/%s", logdir, dir, logbase);
-		if (size == -1)
-			errx(ecode, "snprintf() failed while building destination path for: %s", logs[idx]);
-		else if ((size_t)size >= sizeof buf)
-			errx(ecode, "destination path is too long for: %s", logs[idx]);
-
-		const char* const bufend = buf + sizeof buf - 1;
-		char format[3];
-		char* to = buf + strlen(buf);
-		for (const char* from = fmt; *from; from++) {
-			if (to > bufend)
-				errx(ecode, "date extension is too long for: %s", logs[idx]);
-			if (*from != '%') {
-				*to++ = *from;
-				continue;
-			}
-			from++;
-			switch (*from) {
-				case '\0':
-					errx(ecode, "%% format requires a specifier");
-				case '%':
-					*to++ = *from;
-					break;
-				case 'Y':
-				case 'm':
-				case 'd':
-				case 'H':
-				case 'M':
-				case 'S':
-				case 'V':
-				case 's':
-					sprintf(format, "%%%c", *from);
-					to += strftime(to, bufend - to, format, tmp);
-					break;
-				default:
-					errx(ecode, "%%%c not supported as format specifier", *from);
-			}
-		}
-		sl_add(sl, xstrdup(buf));
-		free(logbase);
-		free(logdir);
+	if (tmp == NULL) {
+		warn("localtime");
+		return NULL;
 	}
-	return sl;
+
+	char buf[MAXPATHLEN];
+	char* logbase;
+	char* logdir;
+	int size;
+	splitpath(logpath, &logdir, &logbase);
+	if (dir == NULL)  // original dir
+		size = snprintf(buf, sizeof buf, "%s/%s", logdir, logbase);
+	else if (dir[0] == '/')  // absolute dir
+		size = snprintf(buf, sizeof buf, "%s/%s", dir, logbase);
+	else  // relative dir
+		size = snprintf(buf, sizeof buf, "%s/%s/%s", logdir, dir, logbase);
+	free(logbase);
+	free(logdir);
+	if (size == -1) {
+		warnx("building destination path failed for: %s", logpath);
+		return NULL;
+	}
+	else if ((size_t)size >= sizeof buf) {
+		warnx("destination path would be too long for: %s", logpath);
+		return NULL;
+	}
+
+	const char* const bufend = buf + sizeof buf - 1;
+	char format[3];
+	char* to = buf + strlen(buf);
+	for (const char* from = fmt; *from; from++) {
+		if (to > bufend) {
+			warnx("date extension is too long for: %s", logpath);
+			return NULL;
+		}
+		if (*from != '%') {
+			*to++ = *from;
+			continue;
+		}
+		from++;
+		switch (*from) {
+			case '\0':
+				warnx("%% format requires a specifier");
+				return NULL;
+			case '%':
+				*to++ = *from;
+				break;
+			case 'Y':
+			case 'm':
+			case 'd':
+			case 'H':
+			case 'M':
+			case 'S':
+			case 'V':
+			case 's':
+				sprintf(format, "%%%c", *from);
+				to += strftime(to, bufend - to, format, tmp);
+				break;
+			default:
+				warnx("%%%c not supported as format specifier", *from);
+				return NULL;
+		}
+	}
+	return xstrdup(buf);
 } /* parse_rotate_fmt */
 
 /*
@@ -617,157 +643,74 @@ void process_log(const char* log, const char* prog) {
 } /* process_log */
 
 /*
- * rotate_logs --
- *	Move the given log aside, create a new one with the same
- *	permissions, and send signal sig to pid.
- *	Returns a pointer to a malloc(3)ed string containing the
- *	temporary name of the new log file
+ * rotate_log --
+ *	Move the given log aside and (optionally) create a new one with the
+ *	same permissions and owner.
+ *	Returns a pointer to a malloc(3)ed string containing the temporary
+ *	name of the moved file.
  */
-StringList* rotate_logs(int logc, char** logs, pid_t pid, int sig, const char* notify_command, int wait) {
-	struct stat stbuf;
-	char *logdir, *logbase, *buf;
-	int fd;
-	StringList* newlogs;  /* temp files for new rotated logs */
-	StringList* origlogs; /* temp files to put back as original */
-	int* rotated;
-
-	newlogs = sl_init();
-	origlogs = sl_init();
-	fd = -1;
-	rotated = NULL;
-
-	for (int idx = 0; idx < logc; idx++) {
-		splitpath(logs[idx], &logdir, &logbase);
-
-		if (stat(logs[idx], &stbuf) == -1) {
-			warn("can't stat '%s'", logs[idx]);
-			goto abort_rotate_logs;
-		}
-		if (!S_ISREG(stbuf.st_mode)) {
-			warnx("'%s' isn't a regular file", logs[idx]);
-			goto abort_rotate_logs;
-		}
-
-		/* create temp file for newly rotated log */
-#undef EXTENSION
-#define EXTENSION ".logrot.XXXXXX"
-		if ((strlen(logs[idx]) + sizeof(EXTENSION) + 1) >= MAXPATHLEN) {
-			warnx("length of '%s' is too long", logs[idx]);
-			goto abort_rotate_logs;
-		}
-		buf = xmalloc(MAXPATHLEN);
-		sl_add(origlogs, buf);
-		sprintf(buf, "%s/%s%s", logdir, logbase, EXTENSION);
-		if ((fd = mkstemp(buf)) == -1) {
-			warn("mkstemp '%s' failed", buf);
-			goto abort_rotate_logs;
-		}
-		if (fchmod(fd, stbuf.st_mode) == -1) {
-			warn("can't fchmod '%s' to %o", buf, (int)stbuf.st_mode);
-			goto abort_rotate_logs;
-		}
-		if (fchown(fd, stbuf.st_uid, stbuf.st_gid) == -1) {
-			warn("can't fchown '%s' to %d,%d", buf, (int)stbuf.st_uid, (int)stbuf.st_gid);
-			goto abort_rotate_logs;
-		}
-		close(fd);
-		fd = -1;
-
-		/* create temp file to rename to the original log */
-#undef EXTENSION
-#define EXTENSION ".newlog.XXXXXX"
-		if ((strlen(logs[idx]) + sizeof(EXTENSION) + 1) >= MAXPATHLEN) {
-			warnx("length of '%s' is too long", logs[idx]);
-			goto abort_rotate_logs;
-		}
-		buf = xmalloc(MAXPATHLEN);
-		sl_add(newlogs, buf);
-		sprintf(buf, "%s/%s%s", logdir, logbase, EXTENSION);
-		if ((fd = mkstemp(buf)) == -1) {
-			warn("mkstemp '%s' failed", buf);
-			goto abort_rotate_logs;
-		}
-		if (fchmod(fd, stbuf.st_mode) == -1) {
-			warn("can't fchmod '%s' to %o", buf, (int)stbuf.st_mode);
-			goto abort_rotate_logs;
-		}
-		if (fchown(fd, stbuf.st_uid, stbuf.st_gid) == -1) {
-			warn("can't fchown '%s' to %d,%d", buf, (int)stbuf.st_uid, (int)stbuf.st_gid);
-			goto abort_rotate_logs;
-		}
-		close(fd);
-		fd = -1;
-		free(logdir);
-		free(logbase);
+char* rotate_log(const char* logpath) {
+	struct stat statb, statb2;
+	if (stat(logpath, &statb) == -1 || lstat(logpath, &statb2) == -1) {
+		warn("%s", logpath);
+		return NULL;
+	}
+	if (!S_ISREG(statb.st_mode) || S_ISLNK(statb2.st_mode)) {
+		warnx("not a regular file or a link: %s", logpath);
+		return NULL;
 	}
 
-	/*
-	 * build list of flags which indicate how far
-	 * the rotation got. values are:
-	 *  0	no rotation (remove all temp files)
-	 *  1	log moved aside (no new log, and temp log
-	 *	still exists)
-	 *  2	everything ok
-	 */
-	rotated = xmalloc(sizeof(int) * logc);
-	for (int idx = 0; idx < logc; idx++)
-		rotated[idx] = 0;
-
-	/* go through and rotate all the logs */
-	for (int idx = 0; idx < logc; idx++) {
-
-		/* rotate the original log to the temp rotated log */
-		if (rename(logs[idx], origlogs->sl_str[idx]) == -1) {
-			warn("can't rename '%s' to '%s'", logs[idx], origlogs->sl_str[idx]);
-			goto abort_rotate_logs;
-		}
-		rotated[idx] = 1;
-
-		/*
-		 * At this point, the original log file has been moved
-		 * aside, but the new (empty) log file hasn't been
-		 * moved into place. Move the empty into place ASAP!
-		 */
-
-		/* rotate the new log to the real log */
-		if (rename(newlogs->sl_str[idx], logs[idx]) == -1) {
-			warn("can't rename '%s' to '%s'", newlogs->sl_str[idx], logs[idx]);
-			goto abort_rotate_logs;
-		}
-		rotated[idx] = 2;
-	}
-
-	ecode = 1; /* temp file exists; set exit code to indicate this */
-
-	/* signal the process then wait a bit */
-	if (pid != 0) {
-		if (kill(pid, sig) == -1)
-			errx(ecode, "can't send sig %d to %d", sig, (int)pid);
-		sleep(wait);
-	}
-	else if (notify_command != NULL) {
-		run_command(notify_command);
-		sleep(wait);
-	}
-
-	return (origlogs); /* successful exit point */
-
-abort_rotate_logs:
-	if (fd != -1)
-		close(fd);
-	for (size_t idx = 0; idx < newlogs->sl_cur; idx++)
-		if (rotated == NULL || rotated[idx] < 1)
-			unlink(newlogs->sl_str[idx]);
-	for (size_t idx = 0; idx < origlogs->sl_cur; idx++)
-		if (rotated == NULL || rotated[idx] < 2)
-			unlink(origlogs->sl_str[idx]);
-	sl_free(origlogs, 1);
-	sl_free(newlogs, 1);
-	free(logdir);
+	char buf[MAXPATHLEN];
+	char* logbase;
+	char* logdir;
+	int size;
+	splitpath(logpath, &logdir, &logbase);
+	size = snprintf(buf, sizeof buf, "%s/%s%s", logdir, logbase, ".logrot.XXXXXX");
 	free(logbase);
-	free(rotated);
-	exit(ecode);
-} /* rotate_logs */
+	free(logdir);
+	if (size == -1) {
+		warnx("building temporary path failed for: %s", logpath);
+		return NULL;
+	}
+	if ((size_t)size >= sizeof buf) {
+		warnx("temporary path would be too long for: %s", logpath);
+		return NULL;
+	}
+
+	const int fd = mkstemp(buf);
+	if (fd == -1) {
+		warn("%s", buf);
+		return NULL;
+	}
+
+	bool success = false;
+	if (fchmod(fd, statb.st_mode) == -1 || fchown(fd, statb.st_uid, statb.st_gid) == -1 || rename(logpath, buf) == -1) {
+		warn("fchmod || fchown || rename");
+	}
+	else {
+		success = true;
+		if (createflag) {
+			const int fd2 = open(logpath, O_WRONLY | O_CREAT, statb.st_mode);
+			if (fd2 == -1) {
+				warn("%s", logpath);
+			}
+			else {
+				if (fchown(fd2, statb.st_uid, statb.st_gid) == -1) {
+					warn("fchown");
+					(void)unlink(logpath);
+				}
+				(void)close(fd2);
+			}
+		}
+	}
+	(void)close(fd);
+	if (!success) {
+		(void)unlink(buf);
+		return NULL;
+	}
+	ecode = 1;  // temp file exists; set exit code to indicate this
+	return xstrdup(buf);
+} /* rotate_log */
 
 /*
  * run_command --
