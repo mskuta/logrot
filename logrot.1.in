@@ -31,33 +31,7 @@
 .SH NAME
 logrot \- rotate log files
 .SH SYNOPSIS
-.B logrot
-.RB [ \-B\c
-.IR "\ preprocessor" ]
-.RB [ \-c ]
-.RB [ \-C\c
-.IR "\ compressor" ]
-.RB [ \-d\c
-.IR "\ destdir" ]
-.RB [ \-f\c
-.IR "\ filter" ]
-.RB [ \-F\c
-.IR "\ postprocessor" ]
-.RB [ \-N\c
-.IR "\ notify_command" ]
-.RB [ \-p\c
-.IR "\ pidfile" ]
-.RB [ \-r\c
-.IR "\ rotatefmt" ]
-.RB [ \-s\c
-.IR "\ sig" ]
-.RB [ \-w\c
-.IR "\ wait" ]
-.RB [ \-X\c
-.IR "\ compressext" ]
-.I "file"
-.RI [ "file"
-.IR "\&.\&.\&." ]
+.BR "logrot [\fIOPTION\fR]... \fIFILE\fR..."
 .SH DESCRIPTION
 .I logrot
 rotates the log file
@@ -227,6 +201,10 @@ Extension to append to
 .I rotfile
 if compression occurred.
 Defaults to \`.gz\'.
+.TP
+.B \-\-create
+Immediately after its rotation, an empty log file is created under the
+original name.
 .SH DIAGNOSITICS
 .I logrot
 will exit with one of the following values:
