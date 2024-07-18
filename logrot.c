@@ -77,7 +77,10 @@ void usage(void) {
  *	Main entry point
  */
 int main(int argc, char* argv[]) {
-	splitpath(argv[0], NULL, &progname);
+	if ((progname = strrchr(argv[0], '/')) == NULL)
+		progname = argv[0];
+	else
+		progname++;
 
 	// exit val for no temp file
 	ecode = 2;
@@ -777,20 +780,16 @@ void run_command(const char* command) {
 void splitpath(const char* path, char** dir, char** base) {
 	const char* const o = strrchr(path, '/');
 	if (o == NULL) {
-		if (dir != NULL)
-			*dir = xstrdup(".");
+		*dir = xstrdup(".");
 		*base = xstrdup(path);
 	}
 	else if (o == path) {
-		if (dir != NULL)
-			*dir = xstrdup("/");
+		*dir = xstrdup("/");
 		*base = xstrdup(path + 1);
 	}
 	else {
-		if (dir != NULL) {
-			*dir = xstrdup(path);
-			(*dir)[o - path] = '\0';
-		}
+		*dir = xstrdup(path);
+		(*dir)[o - path] = '\0';
 		*base = xstrdup(o + 1);
 	}
 } /* splitpath */
