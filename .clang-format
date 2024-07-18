@@ -1,6 +1,7 @@
 ---
 BasedOnStyle:                         Mozilla
 
+AlignArrayOfStructures:               Left
 AlwaysBreakAfterDefinitionReturnType: None
 AlwaysBreakAfterReturnType:           None
 BreakBeforeBraces:                    Custom
