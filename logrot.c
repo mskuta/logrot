@@ -56,6 +56,7 @@ char* progname;
 /*
  * options setting a flag
  */
+static int copytruncateflag;
 static int createflag;
 
 /*
@@ -99,15 +100,16 @@ int main(int argc, char* argv[]) {
 	int ch;
 	// clang-format off
 	static struct option longopts[] = {
-		{"compress",    no_argument,       NULL,        'c'},
-		{"compresscmd", required_argument, NULL,        'C'},
-		{"compressext", required_argument, NULL,        'X'},
-		{"create",      no_argument,       &createflag, 1  },
-		{"dateformat",  required_argument, NULL,        'r'},
-		{"olddir",      required_argument, NULL,        'd'},
-		{"postrotate",  required_argument, NULL,        'F'},
-		{"prerotate",   required_argument, NULL,        'B'},
-		{NULL,          0,                 NULL,        0  }
+		{"compress",     no_argument,       NULL,              'c'},
+		{"compresscmd",  required_argument, NULL,              'C'},
+		{"compressext",  required_argument, NULL,              'X'},
+		{"copytruncate", no_argument,       &copytruncateflag, 1  },
+		{"create",       no_argument,       &createflag,       1  },
+		{"dateformat",   required_argument, NULL,              'r'},
+		{"olddir",       required_argument, NULL,              'd'},
+		{"postrotate",   required_argument, NULL,              'F'},
+		{"prerotate",    required_argument, NULL,              'B'},
+		{NULL,           0,                 NULL,              0  }
 	};
 	// clang-format on
 	int longindex = 0;
@@ -645,9 +647,9 @@ void process_log(const char* log, const char* prog) {
 /*
  * rotate_log --
  *	Move the given log aside and (optionally) create a new one with the
- *	same permissions and owner.
+ *	same permissions and owner, or copy and truncate it.
  *	Returns a pointer to a malloc(3)ed string containing the temporary
- *	name of the moved file.
+ *	name of the original file.
  */
 char* rotate_log(const char* logpath) {
 	struct stat statb, statb2;
@@ -684,22 +686,53 @@ char* rotate_log(const char* logpath) {
 	}
 
 	bool success = false;
-	if (fchmod(fd, statb.st_mode) == -1 || fchown(fd, statb.st_uid, statb.st_gid) == -1 || rename(logpath, buf) == -1) {
-		warn("fchmod || fchown || rename");
+	if (fchmod(fd, statb.st_mode) == -1 || fchown(fd, statb.st_uid, statb.st_gid) == -1) {
+		warn("fchmod || fchown");
 	}
 	else {
-		success = true;
-		if (createflag) {
-			const int fd2 = open(logpath, O_WRONLY | O_CREAT, statb.st_mode);
+		if (copytruncateflag) {
+			const int fd2 = open(logpath, O_RDWR);
 			if (fd2 == -1) {
 				warn("%s", logpath);
 			}
 			else {
-				if (fchown(fd2, statb.st_uid, statb.st_gid) == -1) {
-					warn("fchown");
-					(void)unlink(logpath);
+				off_t len = statb.st_size;
+				ssize_t ret;
+				do {
+					ret = copy_file_range(fd2, NULL, fd, NULL, len, 0);
+					len -= ret;
+				} while (len > 0 && ret > 0);
+				if (ret == -1) {
+					warn("copy_file_range");
+				}
+				else {
+					if (ftruncate(fd2, 0) == -1)
+						warn("ftruncate");
+					else
+						success = true;
 				}
 				(void)close(fd2);
+			}
+		}
+		else {
+			if (rename(logpath, buf) == -1) {
+				warn("rename");
+			}
+			else {
+				success = true;
+				if (createflag) {
+					const int fd2 = open(logpath, O_WRONLY | O_CREAT, statb.st_mode);
+					if (fd2 == -1) {
+						warn("%s", logpath);
+					}
+					else {
+						if (fchown(fd2, statb.st_uid, statb.st_gid) == -1) {
+							warn("fchown");
+							(void)unlink(logpath);
+						}
+						(void)close(fd2);
+					}
+				}
 			}
 		}
 	}

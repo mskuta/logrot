@@ -68,9 +68,7 @@
 #else
 #include "stringlist.h"
 #endif
-#if defined(HAVE_UNISTD_H)
 #include <unistd.h>
-#endif
 
 #if defined(HAVE_SYS_WAIT_H)
 #include <sys/wait.h>
