@@ -3,13 +3,13 @@
 # ==================================================================== #
 
 project('logrot', 'c',
-  version: '1.7-mskuta.6',
+  version: '1.7-mskuta.7',
   meson_version: '>=1.3.0',
   default_options: ['c_std=c99', 'warning_level=3'],
 )
 
 compiler = meson.get_compiler('c')
-args_req = ['-D_DEFAULT_SOURCE']     # compiler arguments (required)
+args_req = ['-D_GNU_SOURCE']         # compiler arguments (required)
 args_add = []                        # compiler arguments (additional)
 srcs = ['logrot.c', 'stringlist.c']  # source files
 gzip = ''
@@ -39,9 +39,6 @@ endif
 if compiler.has_header('strings.h')
   args_add += '-DHAVE_STRINGS_H'
 endif
-if compiler.has_header('unistd.h')
-  args_add += '-DHAVE_UNISTD_H'
-endif
 if compiler.has_header('sys/time.h')
   args_add += '-DHAVE_SYS_TIME_H'
 endif
@@ -57,6 +54,7 @@ endif
 # ===   check functions   ============================================ #
 # ==================================================================== #
 
+assert(compiler.has_function('copy_file_range', args: args_req, prefix: '#include <unistd.h>'))
 assert(compiler.has_function('strftime', args: args_req, prefix: '#include <time.h>'))
 assert(compiler.has_function('waitpid', args: args_req, prefix: ['#include <sys/types.h>', '#include <sys/wait.h>']))
 if compiler.has_function('sysconf', args: args_req, prefix: '#include <unistd.h>')
