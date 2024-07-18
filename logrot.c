@@ -103,16 +103,16 @@ int main(int argc, char* argv[]) {
 	int ch;
 	// clang-format off
 	static struct option longopts[] = {
-		{"compress",     no_argument,       NULL,              'c'},
-		{"compresscmd",  required_argument, NULL,              'C'},
-		{"compressext",  required_argument, NULL,              'X'},
-		{"copytruncate", no_argument,       &copytruncateflag, 1  },
-		{"create",       no_argument,       &createflag,       1  },
-		{"dateformat",   required_argument, NULL,              'r'},
-		{"olddir",       required_argument, NULL,              'd'},
-		{"postrotate",   required_argument, NULL,              'F'},
-		{"prerotate",    required_argument, NULL,              'B'},
-		{NULL,           0,                 NULL,              0  }
+		{ "compress",     no_argument,       NULL,              'c' },
+		{ "compresscmd",  required_argument, NULL,              'C' },
+		{ "compressext",  required_argument, NULL,              'X' },
+		{ "copytruncate", no_argument,       &copytruncateflag, 1   },
+		{ "create",       no_argument,       &createflag,       1   },
+		{ "dateformat",   required_argument, NULL,              'r' },
+		{ "olddir",       required_argument, NULL,              'd' },
+		{ "postrotate",   required_argument, NULL,              'F' },
+		{ "prerotate",    required_argument, NULL,              'B' },
+		{ NULL,           0,                 NULL,              0   }
 	};
 	// clang-format on
 	int longindex = 0;
@@ -491,39 +491,20 @@ char* parse_rotate_fmt(const char* logpath, const char* dir, const char* fmt, ti
  *	Parse the given string for a signal name or number.
  */
 int parse_sig(const char* signame) {
+	// clang-format off
 	struct sig_list {
 		int num;
 		char* name;
 	} sigs[] = {
-		{
-		  SIGHUP,
-		  "HUP",
-		},
-		{
-		  SIGINT,
-		  "INT",
-		},
-		{
-		  SIGQUIT,
-		  "QUIT",
-		},
-		{
-		  SIGTERM,
-		  "TERM",
-		},
-		{
-		  SIGUSR1,
-		  "USR1",
-		},
-		{
-		  SIGUSR2,
-		  "USR2",
-		},
-		{
-		  -1,
-		  NULL,
-		},
+		{ SIGHUP,  "HUP"  },
+		{ SIGINT,  "INT"  },
+		{ SIGQUIT, "QUIT" },
+		{ SIGTERM, "TERM" },
+		{ SIGUSR1, "USR1" },
+		{ SIGUSR2, "USR2" },
+		{ -1,      NULL   },
 	};
+	// clang-format on
 
 	int sig;
 

@@ -34,8 +34,8 @@
 #ifdef STAT_MACROS_BROKEN
 #undef S_ISREG
 #undef S_ISDIR
-#define S_ISREG(mode) (((mode)&S_IFMT) == S_IFREG)
-#define S_ISDIR(mode) (((mode)&S_IFMT) == S_IFDIR)
+#define S_ISREG(mode) (((mode) & S_IFMT) == S_IFREG)
+#define S_ISDIR(mode) (((mode) & S_IFMT) == S_IFDIR)
 #endif
 
 #include <ctype.h>
@@ -77,7 +77,7 @@
 #define WEXITSTATUS(stat_val) ((unsigned)(stat_val) >> 8)
 #endif
 #if !defined(WIFEXITED)
-#define WIFEXITED(stat_val) (((stat_val)&255) == 0)
+#define WIFEXITED(stat_val) (((stat_val) & 255) == 0)
 #endif
 
 #if defined(TIME_WITH_SYS_TIME)
