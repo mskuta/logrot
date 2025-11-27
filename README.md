@@ -14,7 +14,7 @@ The manual page provides details on the various incantation options.
 # Installation
 
 ```
-meson setup --buildtype=release --prefix="$HOME/.local" build
+meson setup --buildtype=release --prefix="$HOME/.local" --strip build
 meson install -Cbuild
 ```
 
