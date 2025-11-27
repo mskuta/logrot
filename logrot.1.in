@@ -209,7 +209,7 @@ instead of moving the old log file and optionally creating a new one.
 .B \-\-create
 Immediately after its rotation, an empty log file is created under the
 original name.
-.SH DIAGNOSITICS
+.SH DIAGNOSTICS
 .I logrot
 will exit with one of the following values:
 .TP 4
