@@ -173,20 +173,25 @@ int main(int argc, char* argv[]) {
 	if (pidfile && pidfile[0] && sig)
 		pid = parse_pid(pidfile);
 
+	StringList* const origlogs = sl_init();  // paths for temporary copies of the original logs
+	StringList* const rotlogs = sl_init();   // paths of the rotated logs
+	if (origlogs == NULL || rotlogs == NULL)
+		err(ecode, "stringlist");
+
 	// move the original logs aside
 	time_t now;
-	StringList* const origlogs = sl_init();
-	StringList* const rotlogs = sl_init();
 	(void)time(&now);
 	for (int idx = 0; idx < argc; idx++) {
 		char* const rotlog = parse_rotate_fmt(argv[idx], destdir, rotate_fmt, now);
 		if (rotlog != NULL) {
 			char* const origlog = rotate_log(argv[idx]);
 			if (origlog != NULL) {
-				sl_add(origlogs, origlog);
-				sl_add(rotlogs, rotlog);
+				// abort if there cannot be a 1:1 relationship between these paths
+				if (!sl_add(origlogs, origlog) || !sl_add(rotlogs, rotlog))
+					err(ecode, "stringlist");
 			}
 			else {
+				// skip this argument and continue
 				free(rotlog);
 			}
 		}
@@ -210,8 +215,11 @@ int main(int argc, char* argv[]) {
 
 	// run the filter and compression
 	StringList* const finallogs = sl_init();
+	if (finallogs == NULL)
+		err(ecode, "stringlist");
 	for (size_t idx = 0; idx < origlogs->sl_cur; idx++)
-		sl_add(finallogs, filter_log(origlogs->sl_str[idx], rotlogs->sl_str[idx], filter_prog, compress ? compress_prog : NULL, compress_ext));
+		if (!sl_add(finallogs, filter_log(origlogs->sl_str[idx], rotlogs->sl_str[idx], filter_prog, compress ? compress_prog : NULL, compress_ext)))
+			warn("stringlist");
 	sl_free(origlogs, 1);
 	sl_free(rotlogs, 1);
 
