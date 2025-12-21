@@ -515,8 +515,6 @@ int parse_sig(const char* signame) {
 	// clang-format on
 
 	int sig;
-
-	sig = 0;
 	if (isdigit((int)*signame)) {
 		const char* p;
 
