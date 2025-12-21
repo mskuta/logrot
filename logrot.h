@@ -39,9 +39,7 @@
 #endif
 
 #include <ctype.h>
-#if defined(HAVE_ERR_H)
 #include <err.h>
-#endif
 #include <errno.h>
 #if defined(HAVE_FCNTL_H)
 #include <fcntl.h>
@@ -128,21 +126,6 @@
 #define MAXFD sysconf(_SC_OPEN_MAX)
 #else
 #define MAXFD OPEN_MAX
-#endif
-
-#if !defined(HAVE_STRERROR)
-char* strerror(int);
-#endif
-
-#if !defined(HAVE_MKSTEMP)
-int mkstemp(char*);
-#endif
-
-#if !defined(HAVE_ERR)
-void err(int eval, const char* fmt, ...);
-void errx(int eval, const char* fmt, ...);
-void warn(const char* fmt, ...);
-void warnx(const char* fmt, ...);
 #endif
 
 #endif /* _LOGROT_H */

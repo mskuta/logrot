@@ -3,7 +3,7 @@
 # ==================================================================== #
 
 project('logrot', 'c',
-  version: '1.7-mskuta.9',
+  version: '1.7-mskuta.10',
   meson_version: '>=1.3.0',
   default_options: ['c_std=c99', 'warning_level=3'],
 )
@@ -21,9 +21,6 @@ fs = import('fs')
 # ===   check headers   ============================================== #
 # ==================================================================== #
 
-if compiler.has_header('err.h')
-  args_add += '-DHAVE_ERR_H'
-endif
 if compiler.has_header('fcntl.h')
   args_add += '-DHAVE_FCNTL_H'
 endif
@@ -54,34 +51,16 @@ endif
 # ===   check functions   ============================================ #
 # ==================================================================== #
 
+assert(compiler.has_function('err', args: args_req, prefix: '#include <err.h>'))
 assert(compiler.has_function('copy_file_range', args: args_req, prefix: '#include <unistd.h>'))
+assert(compiler.has_function('mkstemp', args: args_req, prefix: '#include <stdlib.h>'))
+assert(compiler.has_function('strerror', args: args_req, prefix: '#include <string.h>'))
 assert(compiler.has_function('strftime', args: args_req, prefix: '#include <time.h>'))
 assert(compiler.has_function('waitpid', args: args_req, prefix: ['#include <sys/types.h>', '#include <sys/wait.h>']))
 if compiler.has_function('sysconf', args: args_req, prefix: '#include <unistd.h>')
   args_add += '-DHAVE_SYSCONF'
 else
   assert(compiler.has_define('OPEN_MAX', args: args_req))
-endif
-
-
-# ==================================================================== #
-# ===   substitute functions   ======================================= #
-# ==================================================================== #
-
-if compiler.has_function('err', args: args_req, prefix: '#include <err.h>')
-  args_add += '-DHAVE_ERR'
-else
-  srcs += 'err.c'
-endif
-if compiler.has_function('mkstemp', args: args_req, prefix: '#include <stdlib.h>')
-  args_add += '-DHAVE_MKSTEMP'
-else
-  srcs += 'mkstemp.c'
-endif
-if compiler.has_function('strerror', args: args_req, prefix: '#include <string.h>')
-  args_add += '-DHAVE_STRERROR'
-else
-  srcs += 'strerror.c'
 endif
 
 
