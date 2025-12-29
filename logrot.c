@@ -251,11 +251,8 @@ char* filter_log(const char* origlog, const char* rotlog, const char* filter_pro
 	int infd, outfd, pipefd[2], ispipe, junkfd;
 	int filter_pid, compress_pid, rstat;
 
-	if ((strlen(rotlog) + (compress_prog != NULL ? strlen(compress_ext) : 0) + 1) > sizeof(outfile))
+	if (strlcpy(outfile, rotlog, sizeof outfile) >= sizeof outfile || (compress_prog && strlcat(outfile, compress_ext, sizeof outfile) >= sizeof outfile))
 		errx(ecode, "rotated filename would be too long");
-	strcpy(outfile, rotlog);
-	if (compress_prog != NULL)
-		strcat(outfile, compress_ext);
 
 	if ((infd = open(origlog, O_RDONLY)) == -1)
 		err(ecode, "can't open '%s'", origlog);
@@ -563,7 +560,6 @@ int parse_wait(const char* waittime) {
  *	Perform any processing upon the log.
  */
 void process_log(const char* log, const char* prog) {
-	/* XXX: check retvals here */
 	const char* from;
 	char *logdir, *logbase;
 	char *command, *to;
@@ -572,6 +568,7 @@ void process_log(const char* log, const char* prog) {
 	cmdlen = 0;
 	splitpath(log, &logdir, &logbase);
 
+	/* first pass: compute required length */
 	for (from = prog; *from; from++) {
 		if (*from != '%') {
 			cmdlen++;
@@ -597,11 +594,12 @@ void process_log(const char* log, const char* prog) {
 				errx(ecode, "%%%c not supported in postfilter_log", *from);
 		}
 	}
-	command = (char*)xmalloc((cmdlen + 1) * sizeof(char*));
+	command = xmalloc(cmdlen + 1);
 	to = command;
+
+	/* second pass: build command */
+	size_t len;
 	for (from = prog; *from; from++) {
-		if (to >= command + cmdlen)
-			errx(ecode, "postfilter_log buffer overrun (shouldn't happen)");
 		if (*from != '%') {
 			*to++ = *from;
 			continue;
@@ -612,26 +610,29 @@ void process_log(const char* log, const char* prog) {
 				*to++ = *from;
 				break;
 			case 'd':
-				(void)strcat(to, logdir);
-				to += strlen(logdir);
+				len = strlen(logdir);
+				memcpy(to, logdir, len);
+				to += len;
 				break;
 			case 'f':
-				(void)strcat(to, logbase);
-				to += strlen(logbase);
+				len = strlen(logbase);
+				memcpy(to, logbase, len);
+				to += len;
 				break;
 			case 'p':
-				(void)strcat(to, log);
-				to += strlen(log);
+				len = strlen(log);
+				memcpy(to, log, len);
+				to += len;
 				break;
 			default:
 				errx(ecode, "%%%c unexpected in postfilter_log", *from);
 		}
 	}
-	*to++ = '\0';
+	*to = '\0';
 	free(logdir);
 	free(logbase);
-
 	run_command(command);
+	free(command);
 } /* process_log */
 
 /*
