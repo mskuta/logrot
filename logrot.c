@@ -168,7 +168,7 @@ int main(int argc, char* argv[]) {
 
 	// get PID to signal
 	pid_t pid = 0;
-	if (pidfile && pidfile[0] && sig)
+	if (pidfile != NULL && pidfile[0] != '\0' && sig != 0)
 		pid = parse_pid(pidfile);
 
 	StringList* const origlogs = sl_init();  // paths for temporary copies of the original logs
@@ -207,7 +207,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	// run the preprocessor
-	if (preprocess_prog && preprocess_prog[0])
+	if (preprocess_prog != NULL && preprocess_prog[0] != '\0')
 		for (size_t idx = 0; idx < origlogs->sl_cur; idx++)
 			process_log(origlogs->sl_str[idx], preprocess_prog);
 
@@ -222,7 +222,7 @@ int main(int argc, char* argv[]) {
 	sl_free(rotlogs, 1);
 
 	// run the postprocessor
-	if (postprocess_prog && postprocess_prog[0])
+	if (postprocess_prog != NULL && postprocess_prog[0] != '\0')
 		for (size_t idx = 0; idx < finallogs->sl_cur; idx++)
 			process_log(finallogs->sl_str[idx], postprocess_prog);
 	sl_free(finallogs, 1);
@@ -249,7 +249,7 @@ char* filter_log(const char* origlog, const char* rotlog, const char* filter_pro
 	int infd, outfd, pipefd[2], ispipe, junkfd;
 	int filter_pid, compress_pid, rstat;
 
-	if (strlcpy(outfile, rotlog, sizeof outfile) >= sizeof outfile || (compress_prog && strlcat(outfile, compress_ext, sizeof outfile) >= sizeof outfile))
+	if (strlcpy(outfile, rotlog, sizeof outfile) >= sizeof outfile || (compress_prog != NULL && strlcat(outfile, compress_ext, sizeof outfile) >= sizeof outfile))
 		errx(ecode, "rotated filename would be too long");
 
 	if ((infd = open(origlog, O_RDONLY)) == -1)
@@ -262,7 +262,7 @@ char* filter_log(const char* origlog, const char* rotlog, const char* filter_pro
 	compress_pid = -1;
 	ispipe = 0;
 
-	if (filter_prog && compress_prog) {
+	if (filter_prog != NULL && compress_prog != NULL) {
 		if (pipe(pipefd) == -1)
 			err(ecode, "can't create pipe");
 		ispipe = 1;
@@ -398,7 +398,7 @@ pid_t parse_pid(const char* pidfile) {
 	pid = 0;
 	if (fgets(buf, sizeof(buf), pf) != NULL) {
 		p = buf;
-		while (*p && isdigit((int)*p))
+		while (*p != '\0' && isdigit((int)*p))
 			p++;
 		if (*p == '\0' || isspace((int)*p)) {
 			*p = '\0';
@@ -514,7 +514,7 @@ int parse_sig(const char* signame) {
 		const char* p;
 
 		p = signame;
-		while (*p && isdigit((int)*p))
+		while (*p != '\0' && isdigit((int)*p))
 			p++;
 		if (*p != '\0')
 			errx(ecode, "invalid signal '%s'", signame);
@@ -543,7 +543,7 @@ int parse_wait(const char* waittime) {
 	const char* p;
 
 	p = waittime;
-	while (*p && isdigit((int)*p))
+	while (*p != '\0' && isdigit((int)*p))
 		p++;
 	if (*p != '\0')
 		errx(ecode, "invalid wait '%s'", waittime);
