@@ -42,11 +42,9 @@ char* xstrdup(const char*);
 void usage(void);
 
 /*
- * failure exit value:
- *	1 = temp file exists
- *	2 = no temp file
+ * exit values
  */
-int ecode;
+enum { E_SUCCESS, E_TEMPFILEEXISTS, E_NOTEMPFILE, E_USAGE } ecode;
 
 /*
  * name of program (for error messages)
@@ -69,7 +67,7 @@ void usage(void) {
 	        "\t\t[-F postprocessor] [-N notifycmd] [-p pidfile] [-r rotate_fmt]\n"
 	        "\t\t[-s sig] [-w wait] [-X compress_extension] file [file ...]\n",
 	        progname);
-	exit(1);
+	exit(E_USAGE);
 } /* usage */
 
 /*
@@ -82,8 +80,8 @@ int main(int argc, char* argv[]) {
 	else
 		progname++;
 
-	// exit val for no temp file
-	ecode = 2;
+	// set initial exit value
+	ecode = E_NOTEMPFILE;
 
 	// set default values for options
 	int compress = 0;                     // non-zero if compression required
@@ -230,7 +228,7 @@ int main(int argc, char* argv[]) {
 	sl_free(finallogs, 1);
 
 	// well done
-	exit(0);
+	exit(E_SUCCESS);
 } /* main */
 
 /*
@@ -380,7 +378,7 @@ char* filter_log(const char* origlog, const char* rotlog, const char* filter_pro
 	close(outfd);
 	if (unlink(origlog) == -1)
 		err(ecode, "can't unlink '%s'", origlog);
-	ecode = 2; /* temp file gone; set exit code to indicate this */
+	ecode = E_NOTEMPFILE;
 
 	return (xstrdup(outfile));
 } /* filter_log */
@@ -732,7 +730,7 @@ char* rotate_log(const char* logpath) {
 		(void)unlink(buf);
 		return NULL;
 	}
-	ecode = 1;  // temp file exists; set exit code to indicate this
+	ecode = E_TEMPFILEEXISTS;
 	return xstrdup(buf);
 } /* rotate_log */
 
