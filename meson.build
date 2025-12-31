@@ -3,7 +3,7 @@
 # ==================================================================== #
 
 project('logrot', 'c',
-  version: '1.7-mskuta.13',
+  version: '1.7-mskuta.14',
   meson_version: '>=1.3.0',
   default_options: ['c_std=c99', 'warning_level=3'],
 )
